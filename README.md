@@ -2,10 +2,11 @@
 
 A web-based photography analytics tool that analyzes EXIF data from your photos to help you understand your shooting habits and make informed lens upgrade decisions.
 
-![PhotoLens Analyzer](FocalLengthAnalyzer_logo.png)
+![PhotoLens Analyzer](FocalLengthAnalyzer/FocalLengthAnalyzer_logo.png)
 
-## Features
+## ✨ Features
 
+### Core Features
 - **Multi-format Support** - JPEG, RAW (ARW/CR2/NEF/DNG/ORF/RAF/RW2/PEF), HEIF/HEIC, TIFF, PNG
 - **Drag & Drop Upload** - Upload photos directly in the browser
 - **EXIF Extraction** - Automatic reading of focal length, aperture, ISO, shutter speed, camera & lens info
@@ -13,7 +14,18 @@ A web-based photography analytics tool that analyzes EXIF data from your photos 
 - **Interactive Dashboard** - Rich visualizations powered by ECharts
 - **Lens Recommendations** - AI-powered insights for lens upgrade decisions
 
-## Visualizations
+### UI Design (Glassmorphism)
+- **Modern Glass Effects** - Transparent cards with blur backgrounds and refined borders
+- **Professional Color Scheme** - Dark background with green accent color
+- **Fira Typography** - Fira Sans (body) + Fira Code (data) for enhanced readability
+- **Smooth Animations** - GSAP-powered animations including:
+  - Page entry animations
+  - Card hover effects
+  - Number counting animations
+  - Progress bar animations
+  - Scroll-triggered animations
+
+## 📊 Visualizations
 
 - Focal length group distribution (pie chart)
 - Detailed focal length usage (bar chart)
@@ -26,7 +38,7 @@ A web-based photography analytics tool that analyzes EXIF data from your photos 
 - File format distribution
 - Data table with all photo details
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Install Dependencies
 
@@ -37,37 +49,42 @@ pip install -r requirements.txt
 ### 2. Start the Server
 
 ```bash
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8765 --reload
+cd /Users/yinzh/PythonProjects/PhotoAnalyzer
+source .venv/bin/activate
+python -c "
+from backend.main import app
+import uvicorn
+uvicorn.run(app, host='0.0.0.0', port=8080)
+"
 ```
 
 ### 3. Open in Browser
 
-Visit [http://127.0.0.1:8765](http://127.0.0.1:8765)
+Visit [http://localhost:8080](http://localhost:8080)
 
 ### 4. Upload Photos
 
 Drag & drop your photos or click "Select Photos" to choose files. The dashboard will update automatically with your shooting statistics.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-FocalLengthAnalyzer/
+PhotoAnalyzer/
 ├── backend/
 │   ├── main.py              # FastAPI server with API endpoints
 │   ├── exif_engine.py       # Multi-format EXIF extraction engine
 │   └── camera_data.json     # Camera crop factor database
 ├── frontend/
 │   ├── index.html           # Dashboard page
-│   ├── styles.css           # Dark theme styling
-│   └── app.js               # Frontend logic & ECharts visualizations
-├── main/                    # Legacy CLI version
-│   ├── main.py
-│   └── camera_crop_factors.json
+│   ├── styles.css           # Glassmorphism dark theme styling
+│   ├── app.js               # Frontend logic & ECharts visualizations
+│   └── vendor/              # Third-party libraries (ECharts, GSAP)
+├── FocalLengthAnalyzer/     # Related project (original version)
 ├── requirements.txt         # Python dependencies
 └── README.md
 ```
 
-## API
+## 🔌 API
 
 ### `POST /api/analyze`
 
@@ -99,7 +116,11 @@ Upload photos for analysis.
 }
 ```
 
-## Supported Cameras
+### `POST /api/export-csv`
+
+Export analysis results as CSV file.
+
+## 📷 Supported Cameras
 
 The tool includes a comprehensive camera database with crop factors for:
 
@@ -114,8 +135,32 @@ The tool includes a comprehensive camera database with crop factors for:
 - **DJI** - Mavic/Air/Mini series
 - **Ricoh** - GR III/GR IIIx
 
-## Technology Stack
+## 🛠 Technology Stack
 
-- **Backend:** Python, FastAPI, Pillow, exif, rawpy, pillow-heif
-- **Frontend:** HTML5, CSS3, JavaScript, ECharts 5
-- **Design:** Dark theme, responsive layout, drag & drop upload
+- **Backend:** Python 3.13, FastAPI, Pillow, exif, rawpy, pillow-heif, pandas
+- **Frontend:** HTML5, CSS3, JavaScript, ECharts 5, GSAP 3
+- **Design:** Glassmorphism dark theme, responsive layout, drag & drop upload
+
+## 🎯 Browser Compatibility
+
+- ✅ Chrome 76+
+- ✅ Firefox 72+
+- ✅ Safari 13+
+- ✅ Edge 79+
+
+## 📱 Responsive Design
+
+- ✅ Desktop (1440px+)
+- ✅ Tablet (768px-1023px)
+- ✅ Mobile (<768px)
+
+## ♿ Accessibility
+
+- Keyboard navigation support
+- Focus state indicators
+- Screen reader compatible
+- Reduced motion support
+
+## 📄 License
+
+MIT License

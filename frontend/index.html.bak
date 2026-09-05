@@ -6,11 +6,11 @@
 <title>PhotoLens Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="vendor/echarts.min.js"></script>
-<script src="vendor/gsap.min.js"></script>
-<script src="vendor/ScrollTrigger.min.js"></script>
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="/static/vendor/echarts.min.js"></script>
+<script src="/static/vendor/gsap.min.js"></script>
+<script src="/static/vendor/ScrollTrigger.min.js"></script>
+<link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <!-- Ambient background -->
@@ -38,22 +38,13 @@
       <nav class="header-nav" id="header-nav">
         <button class="nav-btn nav-btn--active" data-view="upload" onclick="showView('upload')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span data-i18n="nav.upload">上传</span>
+          Upload
         </button>
         <button class="nav-btn" data-view="dashboard" onclick="showView('dashboard')" id="nav-dashboard" style="display:none">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-          <span data-i18n="nav.dashboard">数据面板</span>
+          Dashboard
         </button>
       </nav>
-      <div class="header-controls" id="header-controls">
-        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="切换主题">
-          <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" title="切换语言">
-          <span id="lang-label">中/EN</span>
-        </button>
-      </div>
     </div>
   </header>
 
@@ -61,9 +52,9 @@
   <main id="view-upload" class="view view--active">
     <section class="upload-section">
       <div class="upload-hero">
-        <div class="upload-hero__badge" data-i18n="hero.badge">多格式 EXIF 分析</div>
-        <h2 class="upload-hero__title" data-i18n="hero.title">发现你的拍摄基因</h2>
-        <p class="upload-hero__desc" data-i18n="hero.desc">上传照片，解锁焦距、光圈和 ISO 的详细洞察。支持 JPEG、RAW、HEIF、TIFF、PNG。</p>
+        <div class="upload-hero__badge">Multi-format EXIF Analysis</div>
+        <h2 class="upload-hero__title">Discover your shooting DNA</h2>
+        <p class="upload-hero__desc">Upload your photos to unlock detailed focal length, aperture, and ISO insights. Supports JPEG, RAW, HEIF, TIFF, PNG.</p>
       </div>
 
       <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="Upload photos">
@@ -85,8 +76,8 @@
             <line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
         </div>
-        <h3 class="upload-zone__title" data-i18n="upload.drop">拖放照片到此处</h3>
-        <p class="upload-zone__sub" data-i18n="upload.or">或点击浏览文件</p>
+        <h3 class="upload-zone__title">Drop photos here</h3>
+        <p class="upload-zone__sub">or click to browse</p>
         <div class="upload-zone__formats">
           <span class="format-tag">JPEG</span>
           <span class="format-tag">RAW</span>
@@ -94,53 +85,44 @@
           <span class="format-tag">TIFF</span>
           <span class="format-tag">PNG</span>
         </div>
-        <input type="file" id="file-input" multiple accept="image/*,.arw,.cr2,.cr3,.nef,.orf,.raf,.rw2,.dng,.pef,.heif,.heic,.tiff,.tif,.png,.gif,.bmp,.webp" hidden>
-        <input type="file" id="folder-input" webkitdirectory directory multiple hidden>
-        <div class="upload-actions">
-          <button class="btn-primary" id="btn-select-files" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span data-i18n="upload.select">选择照片</span>
-          </button>
-          <button class="btn-secondary" id="btn-select-folder" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span data-i18n="upload.folder">选择文件夹</span>
-          </button>
-        </div>
+        <input type="file" id="file-input" multiple accept="image/*,.arw,.cr2,.cr3,.nef,.orf,.raf,.rw2,.dng,.pef,.heif,.heic" hidden>
+        <button class="btn-primary" onclick="event.stopPropagation(); document.getElementById('file-input').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Select Photos
+        </button>
       </div>
 
-      <!-- Upload Progress -->
       <div class="upload-progress" id="upload-progress">
         <div class="upload-progress__bar">
           <div class="upload-progress__fill" id="progress-fill"></div>
         </div>
         <div class="upload-progress__info">
-          <span id="progress-text" data-i18n="upload.analyzing">正在分析照片...</span>
+          <span id="progress-text">Preparing...</span>
           <span id="progress-pct">0%</span>
         </div>
       </div>
 
-      <!-- Upload Features -->
       <div class="upload-features">
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+        <div class="feature-card" data-feature>
+          <div class="feature-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.exif">EXIF 提取</div>
-          <div class="upload-feature__desc" data-i18n="feature.exif.desc">完整的元数据解析</div>
+          <h4>35mm Equivalent</h4>
+          <p>Auto-converts to full-frame equivalent with 1000+ camera crop factors</p>
         </div>
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <div class="feature-card" data-feature>
+          <div class="feature-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.charts">可视化图表</div>
-          <div class="upload-feature__desc" data-i18n="feature.charts.desc">交互式数据展示</div>
+          <h4>Lens Intelligence</h4>
+          <p>AI-powered recommendations for lens upgrades based on your shooting patterns</p>
         </div>
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <div class="feature-card" data-feature>
+          <div class="feature-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.insights">AI 洞察</div>
-          <div class="upload-feature__desc" data-i18n="feature.insights.desc">智能镜头建议</div>
+          <h4>Rich Dashboard</h4>
+          <p>Interactive charts for focal length, aperture, ISO, timeline, and more</p>
         </div>
       </div>
     </section>
@@ -149,47 +131,59 @@
   <!-- Dashboard View -->
   <main id="view-dashboard" class="view">
     <section class="dashboard-section">
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--photos">📷</div>
+      <!-- Summary Stats -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--photos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-total">0</div>
-          <div class="stat-card__label" data-i18n="stat.photos">照片总数</div>
+          <div class="stat-card__label">Photos</div>
         </div>
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--focal">🔭</div>
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--focal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-focal">-</div>
-          <div class="stat-card__label" data-i18n="stat.focal">平均焦距</div>
+          <div class="stat-card__label">Avg Focal Length</div>
         </div>
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--aperture">⭕</div>
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--aperture">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-aperture">-</div>
-          <div class="stat-card__label" data-i18n="stat.aperture">平均光圈</div>
+          <div class="stat-card__label">Avg Aperture</div>
         </div>
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--iso">🔆</div>
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--iso">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m5-17H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-iso">-</div>
-          <div class="stat-card__label" data-i18n="stat.iso">平均 ISO</div>
+          <div class="stat-card__label">Avg ISO</div>
         </div>
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--camera">📸</div>
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--camera">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-cameras">0</div>
-          <div class="stat-card__label" data-i18n="stat.cameras">相机机身</div>
+          <div class="stat-card__label">Cameras</div>
         </div>
-        <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--lens">🔍</div>
+        <div class="stat-card" data-stat>
+          <div class="stat-card__icon stat-card__icon--lens">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-lenses">0</div>
-          <div class="stat-card__label" data-i18n="stat.lenses">使用镜头</div>
+          <div class="stat-card__label">Lenses</div>
         </div>
       </div>
 
       <!-- Charts Grid -->
       <div class="charts-grid">
-        <div class="chart-card" data-chart>
+        <div class="chart-card chart-card--wide" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.focalGroup">焦距分组</h3>
-              <span class="chart-card__tag" data-i18n="chart.focalGroup.tag">分布</span>
+              <h3>Focal Length Distribution</h3>
+              <span class="chart-card__tag">Groups</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -200,8 +194,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.focalBar">焦距分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.focalBar.tag">按毫米</span>
+              <h3>Focal Length Details</h3>
+              <span class="chart-card__tag">mm</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -212,8 +206,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.aperture">光圈使用</h3>
-              <span class="chart-card__tag" data-i18n="chart.aperture.tag">按 f 档</span>
+              <h3>Aperture Distribution</h3>
+              <span class="chart-card__tag">f-stop</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -224,8 +218,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.iso">ISO 分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.iso.tag">感光度</span>
+              <h3>ISO Distribution</h3>
+              <span class="chart-card__tag">sensitivity</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -236,8 +230,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.camera">相机使用</h3>
-              <span class="chart-card__tag" data-i18n="chart.camera.tag">按型号</span>
+              <h3>Camera Usage</h3>
+              <span class="chart-card__tag">by model</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -248,8 +242,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.lens">镜头使用</h3>
-              <span class="chart-card__tag" data-i18n="chart.lens.tag">按型号</span>
+              <h3>Lens Usage</h3>
+              <span class="chart-card__tag">by model</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -260,8 +254,8 @@
         <div class="chart-card chart-card--wide" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.timeline">拍摄时间线</h3>
-              <span class="chart-card__tag" data-i18n="chart.timeline.tag">按月</span>
+              <h3>Shooting Timeline</h3>
+              <span class="chart-card__tag">monthly</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -272,8 +266,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.hourly">按小时拍摄分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.hourly.tag">时段</span>
+              <h3>Shooting by Hour</h3>
+              <span class="chart-card__tag">time of day</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -284,8 +278,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.dow">星期分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.dow.tag">按周</span>
+              <h3>Day of Week</h3>
+              <span class="chart-card__tag">weekly</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -296,8 +290,8 @@
         <div class="chart-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.format">文件格式</h3>
-              <span class="chart-card__tag" data-i18n="chart.format.tag">按类型</span>
+              <h3>File Format</h3>
+              <span class="chart-card__tag">by type</span>
             </div>
           </div>
           <div class="chart-card__body">
@@ -310,10 +304,10 @@
       <div class="recs-card" id="recommendations" style="display:none">
         <div class="chart-card__head">
           <div class="chart-card__title-group">
-            <h3 data-i18n="recs.title">镜头升级建议</h3>
+            <h3>Lens Upgrade Recommendations</h3>
             <span class="chart-card__tag tag--ai">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              <span data-i18n="recs.ai">AI 洞察</span>
+              AI insights
             </span>
           </div>
         </div>
@@ -324,28 +318,28 @@
       <div class="table-card">
         <div class="chart-card__head">
           <div class="chart-card__title-group">
-            <h3 data-i18n="table.title">照片详情</h3>
+            <h3>Photo Details</h3>
             <span class="chart-card__tag" id="table-count">0 photos</span>
           </div>
           <div class="table-search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="table-filter" data-i18n-placeholder="table.search" placeholder="搜索照片..." oninput="filterTable(this.value)">
+            <input type="text" id="table-filter" placeholder="Search photos..." oninput="filterTable(this.value)">
           </div>
         </div>
         <div class="table-wrapper">
           <table id="data-table">
             <thead>
               <tr>
-                <th data-i18n="table.th.filename">文件名</th>
-                <th data-i18n="table.th.camera">相机</th>
-                <th data-i18n="table.th.lens">镜头</th>
-                <th data-i18n="table.th.focal">焦距 (mm)</th>
-                <th data-i18n="table.th.equiv">等效焦距</th>
-                <th data-i18n="table.th.group">分组</th>
-                <th data-i18n="table.th.aperture">光圈</th>
-                <th data-i18n="table.th.iso">ISO</th>
-                <th data-i18n="table.th.shutter">快门</th>
-                <th data-i18n="table.th.date">日期</th>
+                <th>Filename</th>
+                <th>Camera</th>
+                <th>Lens</th>
+                <th>Focal (mm)</th>
+                <th>35mm Eq</th>
+                <th>Group</th>
+                <th>Aperture</th>
+                <th>ISO</th>
+                <th>Shutter</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -357,12 +351,12 @@
       <div class="action-bar">
         <button class="btn-secondary" onclick="resetApp()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          <span data-i18n="action.reset">重新分析</span>
+          New Analysis
         </button>
       </div>
     </section>
   </main>
 
-<script src="app.js"></script>
+<script src="/static/app.js"></script>
 </body>
 </html>

@@ -308,7 +308,7 @@ async def export_csv(files: List[UploadFile] = File(...)):
     })
 
 # Serve frontend static files
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")
 
 
 if __name__ == "__main__":

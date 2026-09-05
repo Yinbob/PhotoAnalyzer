@@ -1,0 +1,599 @@
+/* ============================================================
+   PhotoLens Analyzer — Frontend Logic + GSAP Animations
+   ============================================================ */
+
+const API_URL = '/api/analyze';
+const CHART_COLORS = [
+  '#10b981', '#34d399', '#3b82f6', '#60a5fa',
+  '#a78bfa', '#c084fc', '#f472b6', '#fb7185',
+  '#fbbf24', '#f59e0b', '#22d3ee', '#06b6d4',
+  '#38bdf8', '#818cf8', '#e879f9', '#a3e635'
+];
+
+/* ── ECharts theme for dark mode ── */
+const CHART_THEME = {
+  textColor: '#94a3b8',
+  axisLineColor: 'rgba(51,65,85,0.4)',
+  splitLineColor: 'rgba(51,65,85,0.2)',
+  tooltipBg: 'rgba(15,23,42,0.95)',
+  tooltipBorder: 'rgba(51,65,85,0.5)',
+};
+
+/* ── GSAP Setup ── */
+gsap.registerPlugin(ScrollTrigger);
+
+function initAnimations() {
+  // Hero entrance
+  gsap.from('.upload-hero__badge', { opacity: 0, y: 16, duration: 0.5, ease: 'power2.out', delay: 0.1 });
+  gsap.from('.upload-hero__title', { opacity: 0, y: 20, duration: 0.6, ease: 'power2.out', delay: 0.2 });
+  gsap.from('.upload-hero__desc', { opacity: 0, y: 16, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.from('.upload-zone', { opacity: 0, y: 24, scale: 0.98, duration: 0.6, ease: 'power2.out', delay: 0.4 });
+  gsap.from('[data-feature]', { opacity: 0, y: 20, duration: 0.45, stagger: 0.1, ease: 'power2.out', delay: 0.55 });
+}
+
+function animateDashboard() {
+  // Stat cards stagger
+  gsap.from('[data-stat]', {
+    opacity: 0, y: 20, scale: 0.95, duration: 0.45,
+    stagger: 0.06, ease: 'power2.out',
+    onComplete: () => animateCounters()
+  });
+
+  // Chart cards scroll reveal
+  gsap.from('[data-chart]', {
+    opacity: 0, y: 30, duration: 0.5,
+    stagger: 0.08, ease: 'power2.out',
+    scrollTrigger: {
+      trigger: '.charts-grid',
+      start: 'top 85%',
+    }
+  });
+
+  // Recommendations
+  const recs = document.getElementById('recommendations');
+  if (recs && recs.style.display !== 'none') {
+    gsap.from('.rec-item', {
+      opacity: 0, x: -20, duration: 0.4,
+      stagger: 0.08, ease: 'power2.out',
+      scrollTrigger: { trigger: recs, start: 'top 90%' }
+    });
+  }
+
+  // Table
+  gsap.from('.table-card', {
+    opacity: 0, y: 20, duration: 0.5,
+    ease: 'power2.out',
+    scrollTrigger: { trigger: '.table-card', start: 'top 90%' }
+  });
+}
+
+/* ── Counter Animation ── */
+function animateCounters() {
+  document.querySelectorAll('.stat-card__value').forEach(el => {
+    const raw = el.textContent.replace(/[^0-9.]/g, '');
+    const num = parseFloat(raw);
+    if (isNaN(num) || num === 0) return;
+    const suffix = el.textContent.replace(/[0-9.]/g, '').trim();
+    const isFloat = raw.includes('.');
+    const decimals = isFloat ? raw.split('.')[1].length : 0;
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: num, duration: 1, ease: 'power2.out',
+      onUpdate: () => {
+        el.textContent = isFloat ? obj.val.toFixed(decimals) + suffix : Math.round(obj.val) + suffix;
+      }
+    });
+  });
+}
+
+/* ── View Management ── */
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('view--active'));
+  document.getElementById('view-' + view).classList.add('view--active');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.toggle('nav-btn--active', btn.dataset.view === view);
+  });
+  if (view === 'dashboard') {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+      animateDashboard();
+    }, 100);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── Upload Handling ── */
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+const progressBar = document.getElementById('upload-progress');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const progressPct = document.getElementById('progress-pct');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }});
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  if (!files || files.length === 0) return;
+
+  progressBar.classList.add('is-visible');
+  progressFill.style.width = '0%';
+  progressText.textContent = `Preparing ${files.length} files...`;
+  progressPct.textContent = '0%';
+  uploadZone.style.opacity = '0.4';
+  uploadZone.style.pointerEvents = 'none';
+
+  const formData = new FormData();
+  for (const file of files) formData.append('files', file);
+
+  try {
+    // Simulate progress
+    let pct = 0;
+    const interval = setInterval(() => {
+      pct = Math.min(pct + Math.random() * 12, 85);
+      progressFill.style.width = pct + '%';
+      progressPct.textContent = Math.round(pct) + '%';
+    }, 300);
+
+    progressText.textContent = `Analyzing ${files.length} photos...`;
+    const resp = await fetch(API_URL, { method: 'POST', body: formData });
+    if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+
+    clearInterval(interval);
+    progressFill.style.width = '100%';
+    progressPct.textContent = '100%';
+    const data = await resp.json();
+    progressText.textContent = `Done! Processed ${data.total_processed} photos.`;
+
+    setTimeout(() => {
+      renderDashboard(data);
+      document.getElementById('nav-dashboard').style.display = '';
+      showView('dashboard');
+    }, 500);
+  } catch (err) {
+    progressText.textContent = `Error: ${err.message}`;
+    progressFill.style.width = '0%';
+    progressPct.textContent = '0%';
+    uploadZone.style.opacity = '1';
+    uploadZone.style.pointerEvents = 'auto';
+  }
+}
+
+function resetApp() {
+  document.getElementById('nav-dashboard').style.display = 'none';
+  progressBar.classList.remove('is-visible');
+  progressFill.style.width = '0%';
+  uploadZone.style.opacity = '1';
+  uploadZone.style.pointerEvents = 'auto';
+  fileInput.value = '';
+  document.querySelectorAll('.chart').forEach(el => {
+    const chart = echarts.getInstanceByDom(el);
+    if (chart) chart.dispose();
+  });
+  ScrollTrigger.getAll().forEach(t => t.kill());
+  showView('upload');
+  initAnimations();
+}
+
+/* ── Dashboard Rendering ── */
+function renderDashboard(data) {
+  const s = data.stats;
+  document.getElementById('stat-total').textContent = s.total;
+  document.getElementById('stat-avg-focal').textContent = s.averages.focal_length + 'mm';
+  document.getElementById('stat-avg-aperture').textContent = 'f/' + s.averages.aperture;
+  document.getElementById('stat-avg-iso').textContent = s.averages.iso;
+  document.getElementById('stat-cameras').textContent = Object.keys(s.cameras || {}).length;
+  document.getElementById('stat-lenses').textContent = Object.keys(s.lenses || {}).length;
+
+  renderFocalGroupPie(s.focal_groups);
+  renderFocalBar(s.focal_dist);
+  renderApertureChart(s.aperture_dist);
+  renderISOChart(s.iso_dist);
+  renderCameraChart(s.cameras);
+  renderLensChart(s.lenses);
+  renderTimeline(s.monthly);
+  renderHourlyChart(s.hourly);
+  renderDOWChart(s.dow);
+  renderFormatChart(s.formats);
+  renderRecommendations(s.recommendations);
+  renderTable(data.photos);
+  document.getElementById('table-count').textContent = s.total + ' photos';
+}
+
+/* ── Chart Helpers ── */
+function initChart(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const existing = echarts.getInstanceByDom(el);
+  if (existing) existing.dispose();
+  const chart = echarts.init(el, null, { renderer: 'canvas' });
+  const ro = new ResizeObserver(() => chart.resize());
+  ro.observe(el);
+  return chart;
+}
+
+function axisStyle() {
+  return {
+    axisLabel: { color: CHART_THEME.textColor, fontSize: 11 },
+    axisLine: { lineStyle: { color: CHART_THEME.axisLineColor } },
+    splitLine: { lineStyle: { color: CHART_THEME.splitLineColor } },
+  };
+}
+
+/* ── Chart Renderers ── */
+function renderFocalGroupPie(data) {
+  const chart = initChart('chart-focal-group');
+  if (!chart || !data) return;
+  const items = Object.entries(data).map(([name, value]) => ({ name, value }));
+  chart.setOption({
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: CHART_THEME.tooltipBg,
+      borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: { type: 'scroll', bottom: 0, textStyle: { color: CHART_THEME.textColor, fontSize: 11 } },
+    color: CHART_COLORS,
+    series: [{
+      type: 'pie', radius: ['38%', '68%'], center: ['50%', '44%'],
+      label: { color: '#f1f5f9', fontSize: 11, formatter: '{d}%', fontWeight: 500 },
+      itemStyle: { borderColor: '#111827', borderWidth: 2 },
+      emphasis: {
+        itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0,0,0,0.5)' },
+        scaleSize: 6
+      },
+      animationType: 'scale',
+      animationEasing: 'elasticOut',
+      animationDelay: (idx) => idx * 80,
+      data: items
+    }]
+  });
+}
+
+function renderFocalBar(data) {
+  const chart = initChart('chart-focal-bar');
+  if (!chart || !data) return;
+  const keys = Object.keys(data).map(Number);
+  const vals = Object.values(data);
+  const s = axisStyle();
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(16,185,129,0.06)' } },
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    grid: { left: 50, right: 16, top: 16, bottom: 60 },
+    xAxis: {
+      type: 'category', data: keys.map(k => k + 'mm'),
+      axisLabel: { color: s.axisLabel.color, fontSize: 10, rotate: 45, interval: Math.max(0, Math.floor(keys.length / 18) - 1) },
+      axisLine: s.axisLine
+    },
+    yAxis: { type: 'value', ...s },
+    series: [{
+      type: 'bar', data: vals, barMaxWidth: 28,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#34d399' }, { offset: 1, color: '#10b981' }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      animationDelay: (idx) => idx * 30,
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderApertureChart(data) {
+  const chart = initChart('chart-aperture');
+  if (!chart || !data) return;
+  const keys = Object.keys(data);
+  const vals = Object.values(data);
+  const s = axisStyle();
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167,139,250,0.06)' } },
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    grid: { left: 50, right: 16, top: 16, bottom: 50 },
+    xAxis: { type: 'category', data: keys, axisLabel: { color: s.axisLabel.color, fontSize: 11, rotate: 30 }, axisLine: s.axisLine },
+    yAxis: { type: 'value', ...s },
+    series: [{
+      type: 'bar', data: vals, barMaxWidth: 36,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#c084fc' }, { offset: 1, color: '#a78bfa' }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      animationDuration: 800, animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderISOChart(data) {
+  const chart = initChart('chart-iso');
+  if (!chart || !data) return;
+  const keys = Object.keys(data).map(String);
+  const vals = Object.values(data);
+  const s = axisStyle();
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(251,191,36,0.06)' } },
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    grid: { left: 50, right: 16, top: 16, bottom: 50 },
+    xAxis: { type: 'category', data: keys, axisLabel: { color: s.axisLabel.color, fontSize: 11, rotate: 30 }, axisLine: s.axisLine },
+    yAxis: { type: 'value', ...s },
+    series: [{
+      type: 'bar', data: vals, barMaxWidth: 36,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#fde68a' }, { offset: 1, color: '#fbbf24' }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      animationDuration: 800, animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderCameraChart(data) {
+  const chart = initChart('chart-camera');
+  if (!chart || !data) return;
+  const items = Object.entries(data).map(([name, value]) => ({ name, value }));
+  chart.setOption({
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: { type: 'scroll', bottom: 0, textStyle: { color: CHART_THEME.textColor, fontSize: 11 } },
+    color: ['#3b82f6', '#10b981', '#f472b6', '#fbbf24', '#34d399', '#fb923c', '#a78bfa'],
+    series: [{
+      type: 'pie', radius: ['38%', '68%'], center: ['50%', '42%'],
+      label: { color: '#f1f5f9', fontSize: 11, formatter: '{d}%', fontWeight: 500 },
+      itemStyle: { borderColor: '#111827', borderWidth: 2 },
+      animationType: 'scale', animationEasing: 'elasticOut',
+      data: items
+    }]
+  });
+}
+
+function renderLensChart(data) {
+  const chart = initChart('chart-lens');
+  if (!chart || !data) return;
+  const items = Object.entries(data).map(([name, value]) => ({ name, value }));
+  if (items.length === 0) {
+    chart.setOption({
+      title: { text: 'No lens data', left: 'center', top: 'center',
+        textStyle: { color: '#64748b', fontSize: 14, fontWeight: 400 } }
+    });
+    return;
+  }
+  chart.setOption({
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: { type: 'scroll', bottom: 0, textStyle: { color: CHART_THEME.textColor, fontSize: 11 } },
+    color: ['#22d3ee', '#38bdf8', '#fb7185', '#a3e635', '#e879f9', '#93c5fd'],
+    series: [{
+      type: 'pie', radius: ['38%', '68%'], center: ['50%', '42%'],
+      label: { color: '#f1f5f9', fontSize: 11, formatter: '{d}%', fontWeight: 500 },
+      itemStyle: { borderColor: '#111827', borderWidth: 2 },
+      animationType: 'scale', animationEasing: 'elasticOut',
+      data: items
+    }]
+  });
+}
+
+function renderTimeline(data) {
+  const chart = initChart('chart-timeline');
+  if (!chart || !data) return;
+  const keys = Object.keys(data);
+  const vals = Object.values(data);
+  const s = axisStyle();
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    grid: { left: 50, right: 16, top: 16, bottom: 40 },
+    xAxis: {
+      type: 'category', data: keys, boundaryGap: false,
+      axisLabel: { color: s.axisLabel.color, fontSize: 11 },
+      axisLine: s.axisLine
+    },
+    yAxis: { type: 'value', ...s },
+    series: [{
+      type: 'line', data: vals, smooth: 0.4, symbol: 'circle', symbolSize: 5,
+      lineStyle: { color: '#10b981', width: 2.5 },
+      itemStyle: { color: '#10b981', borderColor: '#111827', borderWidth: 2 },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(16,185,129,0.25)' },
+          { offset: 1, color: 'rgba(16,185,129,0.01)' }
+        ])
+      },
+      animationDuration: 1200, animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderHourlyChart(data) {
+  const chart = initChart('chart-hourly');
+  if (!chart || !data) return;
+  const keys = Object.keys(data).map(k => k + ':00');
+  const vals = Object.values(data);
+  const s = axisStyle();
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(6,182,212,0.06)' } },
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    grid: { left: 50, right: 16, top: 16, bottom: 50 },
+    xAxis: { type: 'category', data: keys, axisLabel: { color: s.axisLabel.color, fontSize: 10, rotate: 45 }, axisLine: s.axisLine },
+    yAxis: { type: 'value', ...s },
+    series: [{
+      type: 'bar', data: vals, barMaxWidth: 18,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#22d3ee' }, { offset: 1, color: '#06b6d4' }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      animationDuration: 800, animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderDOWChart(data) {
+  const chart = initChart('chart-dow');
+  if (!chart || !data) return;
+  const keys = Object.keys(data);
+  const vals = Object.values(data);
+  chart.setOption({
+    tooltip: {
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 }
+    },
+    radar: {
+      indicator: keys.map(k => ({ name: k, max: Math.max(...vals, 1) * 1.1 })),
+      shape: 'polygon',
+      splitNumber: 4,
+      axisName: { color: CHART_THEME.textColor, fontSize: 11, fontWeight: 500 },
+      splitLine: { lineStyle: { color: CHART_THEME.axisLineColor } },
+      splitArea: { areaStyle: { color: ['transparent'] } },
+      axisLine: { lineStyle: { color: CHART_THEME.axisLineColor } }
+    },
+    series: [{
+      type: 'radar',
+      data: [{
+        value: vals, name: 'Photos',
+        areaStyle: { color: 'rgba(16,185,129,0.15)' },
+        lineStyle: { color: '#10b981', width: 2 },
+        itemStyle: { color: '#10b981', borderColor: '#111827', borderWidth: 2 },
+        symbol: 'circle', symbolSize: 6
+      }],
+      animationDuration: 1000, animationEasing: 'cubicOut'
+    }]
+  });
+}
+
+function renderFormatChart(data) {
+  const chart = initChart('chart-format');
+  if (!chart || !data) return;
+  const items = Object.entries(data).map(([name, value]) => ({ name: name.toUpperCase(), value }));
+  chart.setOption({
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: CHART_THEME.tooltipBg, borderColor: CHART_THEME.tooltipBorder,
+      textStyle: { color: '#f1f5f9', fontSize: 12 },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: { bottom: 0, textStyle: { color: CHART_THEME.textColor, fontSize: 11 } },
+    color: ['#10b981', '#22d3ee', '#f472b6', '#fbbf24', '#a3e635', '#fb923c'],
+    series: [{
+      type: 'pie', radius: ['42%', '68%'], center: ['50%', '42%'],
+      label: { color: '#f1f5f9', fontSize: 11, formatter: '{d}%', fontWeight: 500 },
+      itemStyle: { borderColor: '#111827', borderWidth: 2 },
+      animationType: 'scale', animationEasing: 'elasticOut',
+      data: items
+    }]
+  });
+}
+
+/* ── Recommendations ── */
+function renderRecommendations(recs) {
+  const container = document.getElementById('recommendations');
+  const list = document.getElementById('recommendations-list');
+  if (!recs || recs.length === 0) { container.style.display = 'none'; return; }
+  container.style.display = '';
+  list.innerHTML = recs.map(r => `
+    <div class="rec-item">
+      <div class="rec-title">${r.title}</div>
+      <div class="rec-detail">${r.detail}</div>
+      <div class="rec-suggestion">${r.suggestion}</div>
+    </div>
+  `).join('');
+}
+
+/* ── Data Table ── */
+let allPhotos = [];
+
+function renderTable(photos) {
+  allPhotos = photos;
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = photos.map(p => `
+    <tr>
+      <td title="${p.filename}">${trunc(p.filename, 28)}</td>
+      <td>${p.camera_model || '-'}</td>
+      <td title="${p.lens_model || ''}">${trunc(p.lens_model || '-', 24)}</td>
+      <td class="numeric">${p.focal_length || '-'}</td>
+      <td class="numeric">${p.equiv_focal || '-'}</td>
+      <td>${p.focal_group || '-'}</td>
+      <td class="numeric">${p.aperture ? 'f/' + p.aperture : '-'}</td>
+      <td class="numeric">${p.iso || '-'}</td>
+      <td class="numeric">${formatShutter(p.exposure_time)}</td>
+      <td>${p.date ? p.date.replace(' ', ' ') : '-'}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable(query) {
+  if (!query) return renderTable(allPhotos);
+  const q = query.toLowerCase();
+  const filtered = allPhotos.filter(p =>
+    (p.filename || '').toLowerCase().includes(q) ||
+    (p.camera_model || '').toLowerCase().includes(q) ||
+    (p.lens_model || '').toLowerCase().includes(q) ||
+    (p.focal_group || '').toLowerCase().includes(q) ||
+    String(p.equiv_focal || '').includes(q) ||
+    String(p.iso || '').includes(q)
+  );
+  const tbody = document.getElementById('table-body');
+  document.getElementById('table-count').textContent = filtered.length + ' photos';
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td title="${p.filename}">${trunc(p.filename, 28)}</td>
+      <td>${p.camera_model || '-'}</td>
+      <td title="${p.lens_model || ''}">${trunc(p.lens_model || '-', 24)}</td>
+      <td class="numeric">${p.focal_length || '-'}</td>
+      <td class="numeric">${p.equiv_focal || '-'}</td>
+      <td>${p.focal_group || '-'}</td>
+      <td class="numeric">${p.aperture ? 'f/' + p.aperture : '-'}</td>
+      <td class="numeric">${p.iso || '-'}</td>
+      <td class="numeric">${formatShutter(p.exposure_time)}</td>
+      <td>${p.date ? p.date.replace(' ', ' ') : '-'}</td>
+    </tr>
+  `).join('');
+}
+
+function trunc(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : s; }
+function formatShutter(t) {
+  if (!t) return '-';
+  if (t >= 1) return t + 's';
+  return '1/' + Math.round(1 / t) + 's';
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', () => {
+  initAnimations();
+});
