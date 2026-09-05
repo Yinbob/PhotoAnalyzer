@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoAnalyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/>
+        </svg>
+        <h1>PhotoAnalyzer</h1>
+      </div>
+      <p class="subtitle">EXIF data analysis for photographers</p>
+    </div>
+  </header>
+
+  <!-- Upload Section -->
+  <section id="upload-section" class="section">
+    <div class="upload-zone" id="upload-zone">
+      <div class="upload-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <h3>Drop photos here</h3>
+      <p>or click to select files</p>
+      <p class="upload-hint">Supports JPEG, RAW (ARW/CR2/NEF/DNG), HEIF/HEIC, TIFF, PNG</p>
+      <input type="file" id="file-input" multiple accept="image/*,.arw,.cr2,.cr3,.nef,.orf,.raf,.rw2,.dng,.pef,.heif,.heic" hidden>
+      <input type="file" id="folder-input" webkitdirectory hidden>
+      <div class="upload-buttons">
+        <button class="btn-select" onclick="document.getElementById('file-input').click()">Select Photos</button>
+        <button class="btn-select btn-secondary" onclick="document.getElementById('folder-input').click()">Select Folder</button>
+      </div>
+    </div>
+    <div class="progress-bar" id="progress-bar" style="display:none;">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <p class="progress-text" id="progress-text" style="display:none;"></p>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="section" style="display:none;">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card summary-card">
+        <div class="card-value" id="stat-total">0</div>
+        <div class="card-label">Photos</div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-value" id="stat-avg-focal">-</div>
+        <div class="card-label">Avg Focal Length (mm)</div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-value" id="stat-avg-aperture">-</div>
+        <div class="card-label">Avg Aperture</div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-value" id="stat-avg-iso">-</div>
+        <div class="card-label">Avg ISO</div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-value" id="stat-cameras">0</div>
+        <div class="card-label">Cameras</div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-value" id="stat-lenses">0</div>
+        <div class="card-label">Lenses</div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <!-- Focal Length Group Pie -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Focal Length Distribution</h3>
+          <span class="card-tag">Groups</span>
+        </div>
+        <div class="chart" id="chart-focal-group"></div>
+      </div>
+
+      <!-- Focal Length Bar -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Focal Length Details</h3>
+          <span class="card-tag">mm</span>
+        </div>
+        <div class="chart" id="chart-focal-bar"></div>
+      </div>
+
+      <!-- Aperture Distribution -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Aperture Distribution</h3>
+          <span class="card-tag">f-stop</span>
+        </div>
+        <div class="chart" id="chart-aperture"></div>
+      </div>
+
+      <!-- ISO Distribution -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>ISO Distribution</h3>
+          <span class="card-tag">sensitivity</span>
+        </div>
+        <div class="chart" id="chart-iso"></div>
+      </div>
+
+      <!-- Camera Usage -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Camera Usage</h3>
+          <span class="card-tag">by model</span>
+        </div>
+        <div class="chart" id="chart-camera"></div>
+      </div>
+
+      <!-- Lens Usage -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Lens Usage</h3>
+          <span class="card-tag">by model</span>
+        </div>
+        <div class="chart" id="chart-lens"></div>
+      </div>
+
+      <!-- Shooting Timeline -->
+      <div class="card chart-card card-wide">
+        <div class="card-header">
+          <h3>Shooting Timeline</h3>
+          <span class="card-tag">monthly</span>
+        </div>
+        <div class="chart" id="chart-timeline"></div>
+      </div>
+
+      <!-- Hourly Distribution -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Shooting by Hour</h3>
+          <span class="card-tag">time of day</span>
+        </div>
+        <div class="chart" id="chart-hourly"></div>
+      </div>
+
+      <!-- Day of Week -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Day of Week</h3>
+          <span class="card-tag">weekly pattern</span>
+        </div>
+        <div class="chart" id="chart-dow"></div>
+      </div>
+
+      <!-- Format Distribution -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>File Format</h3>
+          <span class="card-tag">by type</span>
+        </div>
+        <div class="chart" id="chart-format"></div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="card recommendations-card" id="recommendations" style="display:none;">
+      <div class="card-header">
+        <h3>Lens Upgrade Recommendations</h3>
+        <span class="card-tag">AI insights</span>
+      </div>
+      <div class="recommendations-list" id="recommendations-list"></div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card table-card">
+      <div class="card-header">
+        <h3>Photo Details</h3>
+        <span class="card-tag" id="table-count">0 photos</span>
+      </div>
+      <div class="table-wrapper">
+        <table id="data-table">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Camera</th>
+              <th>Lens</th>
+              <th>Focal (mm)</th>
+              <th>35mm Eq</th>
+              <th>Group</th>
+              <th>Aperture</th>
+              <th>ISO</th>
+              <th>Shutter</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+      <button class="btn-new" onclick="exportCSV()">Export CSV</button>
+      <button class="btn-new" onclick="resetApp()">New Analysis</button>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
