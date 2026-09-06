@@ -136,6 +136,12 @@ PhotoAnalyzer/
 - `requirements.txt` 中的 `exif`、`numpy`、`pandas` 实际未被代码使用
 - 无 `.gitignore` — `__pycache__`、`.venv`、`.bak` 文件已入库
 
+## 📄 许可证
+
+本项目基于 [MIT 许可证](LICENSE) 开源。
+
+使用、修改或分发本项目时，**必须保留原作者署名**（版权声明和许可证文本）。
+
 ---
 
 <a id="english"></a>
@@ -269,3 +275,9 @@ PhotoAnalyzer/
 - HEIF/HEIC support requires `pillow-heif`, which is **not** in `requirements.txt` (optional import, silently disabled)
 - `requirements.txt` lists `exif`, `numpy`, `pandas` which are unused by the code
 - No `.gitignore` — `__pycache__`, `.venv`, `.bak` files are committed
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+You may use, modify, and distribute this project, but **must retain the original author attribution** (copyright notice and license text).
