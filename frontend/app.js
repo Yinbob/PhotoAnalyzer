@@ -1,8 +1,8 @@
 /* ============================================================
-   PhotoLens Analyzer — Frontend Logic (v2)
-   Theme Toggle · i18n · Lieflat Charts · Full Dashboard
+   PhotoLens Analyzer — Frontend Logic (v3)
+   "Midnight Lens" Design · Aurora Charts · Better Animations
    ============================================================ */
-console.log('[PhotoLens] Script loaded — v2');
+console.log('[PhotoLens] Script loaded — v3');
 
 const API_URL = '/api/analyze';
 
@@ -16,6 +16,15 @@ const I18N = {
     'hero.badge': 'Multi-format EXIF Analysis',
     'hero.title': 'Discover your shooting DNA',
     'hero.desc': 'Upload your photos to unlock detailed focal length, aperture, and ISO insights. Supports JPEG, RAW, HEIF, TIFF, PNG.',
+    'focalHero.title': 'Focal Length Deep Dive',
+    'focalHero.badge': 'Core Insight',
+    'focalHero.desc': 'See how you use focal lengths so your next lens choice is data-driven.',
+    'feat.exif': 'Deep EXIF Parsing',
+    'feat.exif.desc': 'Extracts focal length, aperture, ISO, camera and lens from every file.',
+    'feat.dash': 'Visual Dashboard',
+    'feat.dash.desc': 'Interactive charts reveal your shooting habits at a glance.',
+    'feat.lens': 'Lens Advisor',
+    'feat.lens.desc': 'Data-driven recommendations for your next lens upgrade.',
     'upload.drop': 'Drop photos here',
     'upload.or': 'or click to browse',
     'upload.select': 'Select Photos',
@@ -83,6 +92,15 @@ const I18N = {
     'hero.badge': '多格式 EXIF 分析',
     'hero.title': '发现你的拍摄基因',
     'hero.desc': '上传照片，解锁焦距、光圈和 ISO 的详细洞察。支持 JPEG、RAW、HEIF、TIFF、PNG。',
+    'focalHero.title': '焦段深度分析',
+    'focalHero.badge': '核心洞察',
+    'focalHero.desc': '了解你的镜头焦段使用习惯，为镜头选择提供数据支撑',
+    'feat.exif': 'EXIF 深度解析',
+    'feat.exif.desc': '精确提取焦距、光圈、ISO 等核心参数',
+    'feat.dash': '可视化仪表板',
+    'feat.dash.desc': '交互式图表展现你的拍摄习惯',
+    'feat.lens': '镜头推荐',
+    'feat.lens.desc': '基于数据分析的智能镜头升级建议',
     'upload.drop': '拖放照片到此处',
     'upload.or': '或点击浏览文件',
     'upload.select': '选择照片',
@@ -169,7 +187,6 @@ function toggleLang() {
   currentLang = currentLang === 'zh' ? 'en' : 'zh';
   localStorage.setItem('photolens-lang', currentLang);
   applyTranslations();
-  // Update lang label to show opposite language
   const langLabel = document.getElementById('lang-label');
   if (langLabel) langLabel.textContent = currentLang === 'zh' ? 'EN' : '中';
   refreshAllCharts();
@@ -195,134 +212,105 @@ function toggleTheme() {
 }
 
 /* ============================================================
-   3. Chart Theme Palettes (Lieflat-charts style)
+   3. Chart Theme Palettes — "Midnight Lens" Sky-Blue
    ============================================================ */
 const CHART_PALETTES = {
   dark: {
-    colors: ['#7C3AED','#6366F1','#3B82F6','#06B6D4','#22C55E','#F59E0B','#EC4899','#F43F5E','#8B5CF6','#14B8A6','#F97316','#84CC16'],
-    textColor: '#94a3b8',
-    axisLineColor: 'rgba(255,255,255,0.1)',
-    splitLineColor: 'rgba(255,255,255,0.06)',
-    tooltipBg: 'rgba(15,23,42,0.95)',
-    tooltipBorder: 'rgba(255,255,255,0.1)',
-    tooltipText: '#f1f5f9',
-    bgColor: 'transparent',
-    labelColor: '#f1f5f9',
-    legendColor: '#94a3b8',
-    pieBorderColor: '#111827',
-    lineColor1: '#14B8A6',
-    lineColor2: '#22C55E',
-    barGrad1: '#34d399',
-    barGrad2: '#10b981',
-    radarAreaColor: 'rgba(16,185,129,0.15)',
-    radarLineColor: '#10b981',
-    radarItemColor: '#10b981',
-    radarBorderColor: '#111827',
+    colors: ['#60A5FA', '#22D3EE', '#2DD4BF', '#34D399', '#C084FC', '#FB923C', '#FBBF24', '#FDE047'],
+    textColor: '#8B95A5',
+    labelColor: '#C8CED6',
+    legendColor: '#6B7585',
+    axisLineColor: 'rgba(255,255,255,0.06)',
+    splitLineColor: 'rgba(255,255,255,0.04)',
+    tooltipBg: 'rgba(16, 19, 30, 0.92)',
+    tooltipBorder: 'rgba(255,255,255,0.08)',
+    pieBorderColor: 'rgba(6, 8, 15, 0.8)',
+    barGrad1: '#38BDF8',
+    barGrad2: '#22D3EE',
+    radarAreaColor: 'rgba(56, 189, 248, 0.08)',
+    leafLabel: '#0A1220',
+    fontFamily: "'DM Sans', sans-serif",
+    monoFamily: "'JetBrains Mono', monospace",
   },
   light: {
-    colors: ['#7C3AED','#6366F1','#2563EB','#0891B2','#16A34A','#D97706','#DB2777','#E11D48','#7C3AED','#0D9488','#EA580C','#65A30D'],
-    textColor: '#475569',
-    axisLineColor: 'rgba(0,0,0,0.1)',
-    splitLineColor: 'rgba(0,0,0,0.06)',
-    tooltipBg: 'rgba(255,255,255,0.98)',
-    tooltipBorder: 'rgba(0,0,0,0.1)',
-    tooltipText: '#1e293b',
-    bgColor: 'transparent',
-    labelColor: '#1e293b',
-    legendColor: '#475569',
-    pieBorderColor: '#f8fafc',
-    lineColor1: '#0D9488',
-    lineColor2: '#16A34A',
-    barGrad1: '#6ee7b7',
-    barGrad2: '#10b981',
-    radarAreaColor: 'rgba(16,185,129,0.12)',
-    radarLineColor: '#0D9488',
-    radarItemColor: '#0D9488',
-    radarBorderColor: '#e2e8f0',
+    colors: ['#2563EB', '#0891B2', '#0D9488', '#059669', '#7C3AED', '#EA580C', '#D97706', '#CA8A04'],
+    textColor: '#4A5568',
+    labelColor: '#2D3748',
+    legendColor: '#718096',
+    axisLineColor: 'rgba(0,0,0,0.08)',
+    splitLineColor: 'rgba(0,0,0,0.05)',
+    tooltipBg: 'rgba(255, 255, 255, 0.96)',
+    tooltipBorder: 'rgba(0,0,0,0.08)',
+    pieBorderColor: '#ffffff',
+    barGrad1: '#0284C7',
+    barGrad2: '#0E7490',
+    radarAreaColor: 'rgba(3, 105, 161, 0.08)',
+    leafLabel: '#FFFFFF',
+    fontFamily: "'DM Sans', sans-serif",
+    monoFamily: "'JetBrains Mono', monospace",
   }
 };
 
 function getChartTheme() {
-  const mode = document.documentElement.getAttribute('data-theme') || 'dark';
-  return CHART_PALETTES[mode] || CHART_PALETTES.dark;
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  return CHART_PALETTES[theme];
 }
 
 /* ============================================================
-   4. Shared Utilities
+   4. Chart Helpers
    ============================================================ */
-const IMAGE_EXTS = [
-  '.jpg','.jpeg','.png','.gif','.bmp','.webp','.tiff','.tif',
-  '.heic','.heif','.arw','.cr2','.cr3','.nef','.orf','.raf',
-  '.rw2','.dng','.pef','.svg'
-];
-
-function isImageFile(file) {
-  const name = (file.name || '').toLowerCase();
-  if (IMAGE_EXTS.some(ext => name.endsWith(ext))) return true;
-  if (file.type && file.type.startsWith('image/')) return true;
-  return false;
-}
-
-function trunc(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : s; }
-
-function formatShutter(t) {
-  if (!t) return '-';
-  if (t >= 1) return t + 's';
-  return '1/' + Math.round(1/t) + 's';
-}
-
-/* ============================================================
-   5. Chart Initialisation Helper
-   ============================================================ */
-let _lastDashboardData = null; // store for re-renders
-
 function initChart(id) {
-  const el = document.getElementById(id);
-  if (!el) return null;
-  const existing = echarts.getInstanceByDom(el);
-  if (existing) existing.dispose();
-  const chart = echarts.init(el, null, { renderer: 'canvas' });
-  new ResizeObserver(() => chart.resize()).observe(el);
+  const dom = document.getElementById(id);
+  if (!dom) return null;
+  let chart = echarts.getInstanceByDom(dom);
+  if (chart) chart.dispose();
+  chart = echarts.init(dom);
   return chart;
+}
+
+function tooltipOpts() {
+  const th = getChartTheme();
+  return {
+    backgroundColor: th.tooltipBg,
+    borderColor: th.tooltipBorder,
+    borderWidth: 1,
+    textStyle: { color: th.labelColor, fontSize: 12, fontFamily: th.fontFamily },
+    extraCssText: 'backdrop-filter: blur(8px); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);'
+  };
 }
 
 function axisStyle() {
   const th = getChartTheme();
   return {
-    axisLabel: { color: th.textColor, fontSize: 11 },
     axisLine: { lineStyle: { color: th.axisLineColor } },
-    splitLine: { lineStyle: { color: th.splitLineColor } },
+    axisTick: { show: false },
+    axisLabel: { color: th.textColor, fontSize: 11, fontFamily: th.fontFamily },
+    splitLine: { lineStyle: { color: th.splitLineColor, type: 'dashed' } }
   };
 }
 
-function tooltipOpts(extra) {
-  const th = getChartTheme();
-  return Object.assign({
-    backgroundColor: th.tooltipBg,
-    borderColor: th.tooltipBorder,
-    textStyle: { color: th.tooltipText, fontSize: 12 }
-  }, extra || {});
-}
-
 /* ============================================================
-   6. Chart Renderers — all use getChartTheme()
+   5. Chart Renderers
    ============================================================ */
-function renderFocalGroupPie(data) {
+function renderFocalGroup(data) {
   const chart = initChart('chart-focal-group');
   if (!chart || !data) return;
   const th = getChartTheme();
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: '{b}: {c} ({d}%)' }),
-    legend: { type: 'scroll', bottom: 0, textStyle: { color: th.legendColor, fontSize: 11 } },
+    legend: { type: 'scroll', bottom: 0, textStyle: { color: th.legendColor, fontSize: 11, fontFamily: th.fontFamily } },
     color: th.colors,
     series: [{
-      type: 'pie', radius: ['38%','68%'], center: ['50%','44%'],
-      label: { color: th.labelColor, fontSize: 11, formatter: '{d}%', fontWeight: 500 },
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['50%', '44%'],
+      label: { color: th.labelColor, fontSize: 11, formatter: '{d}%', fontWeight: 600, fontFamily: th.fontFamily },
       itemStyle: { borderColor: th.pieBorderColor, borderWidth: 2 },
-      emphasis: { itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0,0,0,0.5)' }, scaleSize: 6 },
-      animationType: 'scale', animationEasing: 'elasticOut',
+      emphasis: { itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0,0,0,0.4)' }, scaleSize: 6 },
+      animationType: 'scale',
+      animationEasing: 'elasticOut',
       animationDelay: idx => idx * 80,
-      data: Object.entries(data).map(([k,v]) => ({name:k,value:v}))
+      data: Object.entries(data).map(([k, v]) => ({ name: k, value: v }))
     }]
   });
 }
@@ -336,84 +324,167 @@ function renderFocalBar(data) {
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: th.radarAreaColor } } }),
     grid: { left: 50, right: 16, top: 16, bottom: 60 },
-    xAxis: { type: 'category', data: keys.map(k => k+'mm'), axisLabel: { color: th.textColor, fontSize: 10, rotate: 45, interval: Math.max(0, Math.floor(keys.length/18)-1) }, axisLine: s.axisLine },
+    xAxis: {
+      type: 'category',
+      data: keys.map(k => k + 'mm'),
+      axisLabel: { color: th.textColor, fontSize: 10, rotate: 45, interval: Math.max(0, Math.floor(keys.length / 18) - 1), fontFamily: th.monoFamily },
+      axisLine: s.axisLine
+    },
     yAxis: { type: 'value', ...s },
     series: [{
-      type: 'bar', data: Object.values(data), barMaxWidth: 28,
-      itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:th.barGrad1},{offset:1,color:th.barGrad2}]), borderRadius: [4,4,0,0] },
-      animationDelay: idx => idx*30, animationDuration: 800, animationEasing: 'cubicOut'
+      type: 'bar',
+      data: Object.values(data),
+      barMaxWidth: 28,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: th.barGrad1 },
+          { offset: 1, color: th.barGrad2 }
+        ]),
+        borderRadius: [4, 4, 0, 0]
+      },
+      animationDelay: idx => idx * 30,
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
     }]
   });
 }
 
 function renderApertureChart(data) {
+  // Horizontal chunky bars (G3 Chunky Bars flavor) - pairs cleanly against vertical ISO
   const chart = initChart('chart-aperture');
   if (!chart || !data) return;
-  const s = axisStyle();
   const th = getChartTheme();
+  const entries = Object.entries(data)
+    .sort((a, b) => parseFloat(String(a[0]).replace('f/', '')) - parseFloat(String(b[0]).replace('f/', '')));
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'axis', axisPointer: { type: 'shadow' } }),
-    grid: { left: 50, right: 16, top: 16, bottom: 50 },
-    xAxis: { type: 'category', data: Object.keys(data), axisLabel: { color: th.textColor, fontSize: 11, rotate: 30 }, axisLine: s.axisLine },
-    yAxis: { type: 'value', ...s },
+    grid: { left: 64, right: 54, top: 12, bottom: 14 },
+    xAxis: { type: 'value', ...axisStyle(), splitLine: { show: false } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e[0]),
+      axisLabel: { color: th.textColor, fontSize: 11, fontFamily: th.monoFamily },
+      axisLine: { lineStyle: { color: th.axisLineColor } },
+      axisTick: { show: false }
+    },
     series: [{
-      type: 'bar', data: Object.values(data), barMaxWidth: 36,
-      itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:th.colors[5]},{offset:1,color:th.colors[4]}]), borderRadius: [4,4,0,0] },
-      animationDuration: 800, animationEasing: 'cubicOut'
+      type: 'bar',
+      data: entries.map(e => e[1]),
+      barWidth: 18,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+          { offset: 0, color: th.colors[3] },
+          { offset: 1, color: th.colors[1] }
+        ]),
+        borderRadius: [0, 9, 9, 0]
+      },
+      label: { show: true, position: 'right', color: th.labelColor, fontSize: 11, fontWeight: 600, fontFamily: th.monoFamily, formatter: '{c}' },
+      animationDelay: idx => idx * 70,
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
     }]
   });
 }
 
 function renderISOChart(data) {
+  // Vertical rung bars (F1 Rung Bars flavor) - ISO ladder ascending
   const chart = initChart('chart-iso');
   if (!chart || !data) return;
   const s = axisStyle();
   const th = getChartTheme();
+  const entries = Object.entries(data).sort((a, b) => Number(a[0]) - Number(b[0]));
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'axis', axisPointer: { type: 'shadow' } }),
-    grid: { left: 50, right: 16, top: 16, bottom: 50 },
-    xAxis: { type: 'category', data: Object.keys(data).map(String), axisLabel: { color: th.textColor, fontSize: 11, rotate: 30 }, axisLine: s.axisLine },
+    grid: { left: 44, right: 14, top: 16, bottom: 44 },
+    xAxis: {
+      type: 'category',
+      data: entries.map(e => String(e[0])),
+      axisLabel: { color: th.textColor, fontSize: 10, interval: Math.max(0, Math.floor(entries.length / 6) - 1), fontFamily: th.monoFamily },
+      axisLine: s.axisLine
+    },
     yAxis: { type: 'value', ...s },
     series: [{
-      type: 'bar', data: Object.values(data), barMaxWidth: 36,
-      itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:th.colors[7]},{offset:1,color:th.colors[6]}]), borderRadius: [4,4,0,0] },
-      animationDuration: 800, animationEasing: 'cubicOut'
+      type: 'bar',
+      data: entries.map(e => e[1]),
+      barMaxWidth: 26,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: th.colors[0] },
+          { offset: 1, color: th.colors[2] }
+        ]),
+        borderRadius: [5, 5, 2, 2]
+      },
+      animationDelay: idx => idx * 50,
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
     }]
   });
 }
 
 function renderCameraChart(data) {
+  // Nested Treemap single layer (F13) - rectangle area = photos per body
   const chart = initChart('chart-camera');
   if (!chart || !data) return;
   const th = getChartTheme();
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+  let children;
+  if (entries.length > 12) {
+    const top = entries.slice(0, 11);
+    const rest = top.length ? entries.slice(11).reduce((sum, e) => sum + e[1], 0) : 0;
+    children = top.map((e, i) => ({ name: e[0], value: e[1], itemStyle: { color: th.colors[i % th.colors.length] } }));
+    if (rest > 0) children.push({ name: 'Other', value: rest, itemStyle: { color: '#64748B' } });
+  } else {
+    children = entries.map((e, i) => ({ name: e[0], value: e[1], itemStyle: { color: th.colors[i % th.colors.length] } }));
+  }
   chart.setOption({
-    tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: '{b}: {c} ({d}%)' }),
-    legend: { type: 'scroll', bottom: 0, textStyle: { color: th.legendColor, fontSize: 11 } },
-    color: th.colors,
+    tooltip: Object.assign(tooltipOpts(), { formatter: p => (p.name ? p.name + ': ' + p.value + ' 张' : '') }),
     series: [{
-      type: 'pie', radius: ['38%','68%'], center: ['50%','44%'],
-      label: { color: th.labelColor, fontSize: 11, formatter: '{d}%', fontWeight: 500 },
-      itemStyle: { borderColor: th.pieBorderColor, borderWidth: 2 },
-      animationType: 'scale', animationEasing: 'elasticOut',
-      data: Object.entries(data).map(([k,v]) => ({name:k,value:v}))
+      type: 'treemap',
+      roam: false,
+      nodeClick: false,
+      breadcrumb: { show: false },
+      label: { show: true, color: th.leafLabel, fontSize: 11, fontWeight: 700, fontFamily: th.fontFamily, lineHeight: 16 },
+      itemStyle: { borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1, gapWidth: 2 },
+      emphasis: { itemStyle: { borderColor: 'rgba(255,255,255,0.25)' } },
+      data: [{ name: 'cameras', children: children }],
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
     }]
   });
 }
 
 function renderLensChart(data) {
+  // Horizontal thin tick rows (F5 Tick Rows flavor) - each lens one row, thin tick = usage
   const chart = initChart('chart-lens');
   if (!chart || !data) return;
   const th = getChartTheme();
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 12);
   chart.setOption({
-    tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: '{b}: {c} ({d}%)' }),
-    legend: { type: 'scroll', bottom: 0, textStyle: { color: th.legendColor, fontSize: 11 } },
-    color: th.colors.slice().reverse(),
+    tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: '{b}: {c} 张' }),
+    grid: { left: 18, right: 58, top: 12, bottom: 12 },
+    xAxis: { type: 'value', show: false },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e[0]).reverse(),
+      axisLabel: { color: th.textColor, fontSize: 11, fontFamily: th.fontFamily, width: 122, overflow: 'truncate' },
+      axisLine: { lineStyle: { color: th.axisLineColor } },
+      axisTick: { show: false }
+    },
     series: [{
-      type: 'pie', radius: ['38%','68%'], center: ['50%','44%'],
-      label: { color: th.labelColor, fontSize: 11, formatter: '{d}%', fontWeight: 500 },
-      itemStyle: { borderColor: th.pieBorderColor, borderWidth: 2 },
-      animationType: 'scale', animationEasing: 'elasticOut',
-      data: Object.entries(data).map(([k,v]) => ({name:k,value:v}))
+      type: 'bar',
+      data: entries.map(e => e[1]).reverse(),
+      barWidth: 8,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+          { offset: 0, color: th.colors[1] },
+          { offset: 1, color: th.colors[0] }
+        ]),
+        borderRadius: [0, 4, 4, 0]
+      },
+      label: { show: true, position: 'right', color: th.labelColor, fontSize: 11, fontFamily: th.monoFamily, formatter: '{c}' },
+      animationDelay: idx => idx * 60,
+      animationDuration: 800,
+      animationEasing: 'cubicOut'
     }]
   });
 }
@@ -421,38 +492,81 @@ function renderLensChart(data) {
 function renderTimeline(data) {
   const chart = initChart('chart-timeline');
   if (!chart || !data) return;
-  const keys = Object.keys(data);
   const s = axisStyle();
   const th = getChartTheme();
+  const areaTop = hexToRgba(th.colors[0], 0.25);
+  const keys = Object.keys(data);
+  const labels = keys.map(k => formatMonthLabel(k));
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'axis' }),
     grid: { left: 50, right: 16, top: 16, bottom: 40 },
-    xAxis: { type: 'category', data: keys, axisLabel: { color: th.textColor, fontSize: 10, rotate: 30 }, axisLine: s.axisLine },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      axisLabel: { color: th.textColor, fontSize: 10, fontFamily: th.monoFamily },
+      axisLine: s.axisLine
+    },
     yAxis: { type: 'value', ...s },
     series: [{
-      type: 'line', data: Object.values(data), smooth: true,
-      lineStyle: { color: th.lineColor1, width: 2 },
-      areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:th.radarAreaColor},{offset:1,color:'rgba(16,185,129,0)'}]) },
-      itemStyle: { color: th.lineColor1 },
-      animationDuration: 1200, animationEasing: 'cubicOut'
+      type: 'line',
+      data: Object.values(data),
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: { color: th.colors[0], width: 2 },
+      itemStyle: { color: th.colors[0] },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: areaTop },
+          { offset: 1, color: 'rgba(0,0,0,0)' }
+        ])
+      },
+      animationDuration: 1200,
+      animationEasing: 'cubicOut'
     }]
   });
 }
 
 function renderHourlyChart(data) {
+  // 24h radial ring (L10 Radial Patchwork flavor) - hour = angle, bar length = photos
   const chart = initChart('chart-hourly');
   if (!chart || !data) return;
-  const s = axisStyle();
   const th = getChartTheme();
+  const vals = Array.from({ length: 24 }, (_, i) => data[i] || 0);
+  const max = Math.max.apply(null, vals.concat([1]));
   chart.setOption({
-    tooltip: Object.assign(tooltipOpts(), { trigger: 'axis', axisPointer: { type: 'shadow' } }),
-    grid: { left: 50, right: 16, top: 16, bottom: 40 },
-    xAxis: { type: 'category', data: Object.keys(data), axisLabel: { color: th.textColor, fontSize: 10 }, axisLine: s.axisLine },
-    yAxis: { type: 'value', ...s },
+    tooltip: Object.assign(tooltipOpts(), { formatter: p => p.name + ' 时: ' + p.value + ' 张' }),
+    polar: { radius: ['20%', '80%'], center: ['50%', '54%'] },
+    angleAxis: {
+      type: 'category',
+      data: Array.from({ length: 24 }, (_, i) => i),
+      startAngle: 90,
+      axisLabel: { color: th.textColor, fontSize: 9, fontFamily: th.monoFamily, interval: 2, formatter: v => v + 'h' },
+      axisLine: { show: false },
+      axisTick: { show: false }
+    },
+    radiusAxis: {
+      type: 'value',
+      min: 0,
+      max: Math.round(max * 1.2) || 1,
+      axisLabel: { show: false },
+      splitLine: { lineStyle: { color: th.splitLineColor, type: 'dashed' } }
+    },
     series: [{
-      type: 'bar', data: Object.values(data), barMaxWidth: 20,
-      itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:th.colors[2]},{offset:1,color:th.colors[3]}]), borderRadius: [3,3,0,0] },
-      animationDuration: 800, animationEasing: 'cubicOut'
+      type: 'bar',
+      data: vals,
+      coordinateSystem: 'polar',
+      barWidth: '62%',
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: th.colors[0] },
+          { offset: 1, color: th.colors[2] }
+        ]),
+        borderRadius: 3
+      },
+      animationDelay: idx => idx * 18,
+      animationDuration: 900,
+      animationEasing: 'cubicOut'
     }]
   });
 }
@@ -460,365 +574,400 @@ function renderHourlyChart(data) {
 function renderDOWChart(data) {
   const chart = initChart('chart-dow');
   if (!chart || !data) return;
-  const keys = Object.keys(data);
-  const vals = Object.values(data);
   const th = getChartTheme();
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const vals = days.map(d => data[d] || 0);
   chart.setOption({
-    tooltip: tooltipOpts(),
+    tooltip: Object.assign(tooltipOpts()),
     radar: {
-      indicator: keys.map(k => ({ name: k, max: Math.max(...vals,1)*1.1 })),
-      shape: 'polygon', splitNumber: 4,
-      axisName: { color: th.textColor, fontSize: 11, fontWeight: 500 },
-      splitLine: { lineStyle: { color: th.axisLineColor } },
-      splitArea: { areaStyle: { color: ['transparent'] } },
+      indicator: days.map(d => ({ name: d, max: Math.max.apply(null, vals.concat([0])) * 1.2 || 10 })),
+      shape: 'polygon',
+      splitNumber: 4,
+      axisName: { color: th.textColor, fontSize: 11, fontFamily: th.fontFamily },
+      splitLine: { lineStyle: { color: th.splitLineColor } },
+      splitArea: { show: true, areaStyle: { color: ['rgba(0,0,0,0)', 'rgba(255,255,255,0.02)'] } },
       axisLine: { lineStyle: { color: th.axisLineColor } }
     },
     series: [{
       type: 'radar',
-      data: [{
-        value: vals, name: t('stat.photos'),
-        areaStyle: { color: th.radarAreaColor },
-        lineStyle: { color: th.radarLineColor, width: 2 },
-        itemStyle: { color: th.radarItemColor, borderColor: th.radarBorderColor, borderWidth: 2 },
-        symbol: 'circle', symbolSize: 6
-      }],
-      animationDuration: 1000, animationEasing: 'cubicOut'
+      data: [{ value: vals }],
+      areaStyle: { color: th.radarAreaColor },
+      lineStyle: { color: th.colors[0], width: 2 },
+      itemStyle: { color: th.colors[0] },
+      animationDuration: 800
     }]
   });
 }
 
 function renderFormatChart(data) {
-  const chart = initChart('chart-format');
-  if (!chart || !data) return;
+  // Dot waffle (G4 Dot Waffle flavor) - 100 dots, one dot = ~1% share
+  const el = document.getElementById('chart-format');
+  if (!el || !data) return;
   const th = getChartTheme();
-  chart.setOption({
-    tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: '{b}: {c} ({d}%)' }),
-    legend: { bottom: 0, textStyle: { color: th.legendColor, fontSize: 11 } },
-    color: th.colors.slice(0, 6),
-    series: [{
-      type: 'pie', radius: ['42%','68%'], center: ['50%','42%'],
-      label: { color: th.labelColor, fontSize: 11, formatter: '{d}%', fontWeight: 500 },
-      itemStyle: { borderColor: th.pieBorderColor, borderWidth: 2 },
-      animationType: 'scale', animationEasing: 'elasticOut',
-      data: Object.entries(data).map(([k,v]) => ({name:k.toUpperCase(),value:v}))
-    }]
+  const inst = echarts.getInstanceByDom(el);
+  if (inst) inst.dispose();
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const total = entries.reduce((sum, e) => sum + e[1], 0);
+  if (!total) return;
+  const cells = [];
+  const percents = entries.map((e, i) => ({
+    name: e[0], count: e[1],
+    rem: Math.max(1, Math.round(e[1] / total * 100)),
+    color: th.colors[i % th.colors.length]
+  }));
+  let ci = 0;
+  for (let i = 0; i < 100; i++) {
+    while (ci < percents.length - 1 && percents[ci].rem <= 0) ci++;
+    if (ci < percents.length && percents[ci].rem > 0) {
+      cells.push(percents[ci].color);
+      percents[ci].rem--;
+    } else {
+      cells.push('rgba(125,140,165,0.10)');
+    }
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'format-waffle';
+  const grid = document.createElement('div');
+  grid.className = 'format-waffle__grid';
+  cells.forEach(color => {
+    const d = document.createElement('span');
+    d.className = 'format-waffle__dot';
+    d.style.background = color;
+    grid.appendChild(d);
   });
+  const legend = document.createElement('div');
+  legend.className = 'format-waffle__legend';
+  percents.forEach((e, i) => {
+    const l = document.createElement('span');
+    l.className = 'format-waffle__item';
+    l.innerHTML = '<i style="background:' + th.colors[i % th.colors.length] + '"></i>' + escapeHtml(e.name) + ' ' + e.count;
+    legend.appendChild(l);
+  });
+  wrap.appendChild(grid);
+  wrap.appendChild(legend);
+  el.innerHTML = '';
+  el.appendChild(wrap);
 }
 
 /* ============================================================
-   7. refreshAllCharts — re-render on theme/language change
+   6. Render Dashboard
    ============================================================ */
-function refreshAllCharts() {
-  if (!_lastDashboardData) return;
-  const s = _lastDashboardData.stats || {};
-  renderFocalGroupPie(s.focal_groups);
-  renderFocalBar(s.focal_dist);
-  renderApertureChart(s.aperture_dist);
-  renderISOChart(s.iso_dist);
-  renderCameraChart(s.cameras);
-  renderLensChart(s.lenses);
-  renderTimeline(s.monthly);
-  renderHourlyChart(s.hourly);
-  renderDOWChart(s.dow);
-  renderFormatChart(s.formats);
+let _lastDashboardData = null;
+
+function renderDashboard(data) {
+  _lastDashboardData = data;
+  const stats = data && data.stats ? data.stats : {};
+  const avgs = stats.averages || {};
+
+  // Animate stat numbers
+  animateNumber('stat-total', data.total_processed || 0);
+  animateNumber('stat-avg-focal', avgs.focal_length, ' mm');
+  animateNumber('stat-avg-aperture', avgs.aperture, '', 'f/');
+  animateNumber('stat-avg-iso', avgs.iso);
+  animateNumber('stat-cameras', Object.keys(stats.cameras || {}).length);
+  animateNumber('stat-lenses', Object.keys(stats.lenses || {}).length);
+
+  // Render charts
+  if (stats.focal_groups) renderFocalGroup(stats.focal_groups);
+  if (stats.focal_dist) renderFocalBar(stats.focal_dist);
+  if (stats.aperture_dist) renderApertureChart(stats.aperture_dist);
+  if (stats.iso_dist) renderISOChart(stats.iso_dist);
+  if (stats.cameras) renderCameraChart(stats.cameras);
+  if (stats.lenses) renderLensChart(stats.lenses);
+  if (stats.monthly) renderTimeline(stats.monthly);
+  if (stats.hourly) renderHourlyChart(stats.hourly);
+  if (stats.dow) renderDOWChart(stats.dow);
+  if (stats.formats) renderFormatChart(stats.formats);
+
+  // Recommendations
+  renderRecommendations(stats.recommendations || []);
+
+  // Data table
+  if (data.photos && data.photos.length > 0) {
+    renderTable(data.photos);
+  }
 }
 
 /* ============================================================
-   8. Recommendations
+   7. Animated Number Counter
+   ============================================================ */
+function animateNumber(id, value, suffix = '', prefix = '') {
+  const el = document.getElementById(id);
+  if (!el || value === undefined || value === null) return;
+
+  const target = typeof value === 'number' ? value : parseFloat(value);
+  if (isNaN(target)) {
+    el.textContent = value;
+    return;
+  }
+
+  const duration = 1200;
+  const start = performance.now();
+  const startVal = 0;
+
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = startVal + (target - startVal) * eased;
+
+    if (Number.isInteger(target)) {
+      el.textContent = prefix + Math.round(current) + suffix;
+    } else {
+      el.textContent = prefix + current.toFixed(1) + suffix;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
+/* ============================================================
+   8. Recommendations Renderer
    ============================================================ */
 function renderRecommendations(recs) {
   const container = document.getElementById('recommendations');
   const list = document.getElementById('recommendations-list');
   if (!container || !list) return;
-  if (!recs || recs.length === 0) { container.style.display = 'none'; return; }
+
+  if (!recs || recs.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
   container.style.display = '';
-  list.innerHTML = recs.map(r =>
-    '<div class="rec-item">' +
-      '<div class="rec-title">' + r.title + '</div>' +
-      '<div class="rec-detail">' + r.detail + '</div>' +
-      '<div class="rec-suggestion">' + r.suggestion + '</div>' +
-    '</div>'
-  ).join('');
+  list.innerHTML = '';
+
+  recs.forEach(rec => {
+    const item = document.createElement('div');
+    item.className = 'recs-item';
+    item.innerHTML = `
+      <div class="recs-item__icon">🔭</div>
+      <div class="recs-item__body">
+        <div class="recs-item__title">${escapeHtml(rec.title || '')}</div>
+        <div class="recs-item__desc">${escapeHtml(rec.detail || '')}</div>
+        ${rec.suggestion ? `<div class="recs-item__hint">${escapeHtml(rec.suggestion)}</div>` : ''}
+      </div>
+    `;
+    list.appendChild(item);
+  });
 }
 
 /* ============================================================
    9. Data Table
    ============================================================ */
-let allPhotos = [];
+let _allPhotos = [];
 
 function renderTable(photos) {
-  allPhotos = photos;
+  _allPhotos = photos;
   const tbody = document.getElementById('table-body');
+  const countEl = document.getElementById('table-count');
   if (!tbody) return;
-  tbody.innerHTML = photos.map(p =>
-    '<tr>' +
-      '<td title="' + p.filename + '">' + trunc(p.filename, 28) + '</td>' +
-      '<td>' + (p.camera_model || '-') + '</td>' +
-      '<td title="' + (p.lens_model || '') + '">' + trunc(p.lens_model || '-', 24) + '</td>' +
-      '<td class="numeric">' + (p.focal_length || '-') + '</td>' +
-      '<td class="numeric">' + (p.equiv_focal || '-') + '</td>' +
-      '<td>' + (p.focal_group || '-') + '</td>' +
-      '<td class="numeric">' + (p.aperture ? 'f/' + p.aperture : '-') + '</td>' +
-      '<td class="numeric">' + (p.iso || '-') + '</td>' +
-      '<td class="numeric">' + formatShutter(p.exposure_time) + '</td>' +
-      '<td>' + (p.date ? p.date.replace(' ', ' ') : '-') + '</td>' +
-    '</tr>'
-  ).join('');
+
+  tbody.innerHTML = '';
+  if (countEl) countEl.textContent = photos.length + ' photos';
+
+  photos.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td title="${escapeHtml(p.filename)}">${escapeHtml(truncate(p.filename, 24))}</td>
+      <td>${escapeHtml(p.camera_model || '-')}</td>
+      <td title="${escapeHtml(p.lens_model)}">${escapeHtml(truncate(p.lens_model, 20) || '-')}</td>
+      <td class="mono">${p.focal_length || '-'}</td>
+      <td class="mono">${p.equiv_focal || '-'}</td>
+      <td>${escapeHtml(p.focal_group || '-')}</td>
+      <td class="mono">${p.aperture ? 'f/' + p.aperture : '-'}</td>
+      <td class="mono">${p.iso || '-'}</td>
+      <td class="mono">${formatShutter(p.exposure_time)}</td>
+      <td class="mono">${formatDate(p.date)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
-window.filterTable = function(query) {
-  if (!query) return renderTable(allPhotos);
-  const q = query.toLowerCase();
-  const filtered = allPhotos.filter(p =>
-    (p.filename||'').toLowerCase().includes(q) ||
-    (p.camera_model||'').toLowerCase().includes(q) ||
-    (p.lens_model||'').toLowerCase().includes(q) ||
-    (p.focal_group||'').toLowerCase().includes(q) ||
-    String(p.equiv_focal||'').includes(q) ||
-    String(p.iso||'').includes(q)
-  );
-  const tbody = document.getElementById('table-body');
-  const tc = document.getElementById('table-count');
-  if (tc) tc.textContent = filtered.length + ' ' + t('photos');
-  if (tbody) tbody.innerHTML = filtered.map(p =>
-    '<tr>' +
-      '<td title="' + p.filename + '">' + trunc(p.filename, 28) + '</td>' +
-      '<td>' + (p.camera_model || '-') + '</td>' +
-      '<td title="' + (p.lens_model || '') + '">' + trunc(p.lens_model || '-', 24) + '</td>' +
-      '<td class="numeric">' + (p.focal_length || '-') + '</td>' +
-      '<td class="numeric">' + (p.equiv_focal || '-') + '</td>' +
-      '<td>' + (p.focal_group || '-') + '</td>' +
-      '<td class="numeric">' + (p.aperture ? 'f/' + p.aperture : '-') + '</td>' +
-      '<td class="numeric">' + (p.iso || '-') + '</td>' +
-      '<td class="numeric">' + formatShutter(p.exposure_time) + '</td>' +
-      '<td>' + (p.date ? p.date.replace(' ', ' ') : '-') + '</td>' +
-    '</tr>'
-  ).join('');
-};
+function filterTable(query) {
+  if (!_allPhotos.length) return;
+  const q = query.toLowerCase().trim();
+  const filtered = q ? _allPhotos.filter(p =>
+    (p.filename && p.filename.toLowerCase().includes(q)) ||
+    (p.camera_model && p.camera_model.toLowerCase().includes(q)) ||
+    (p.lens_model && p.lens_model.toLowerCase().includes(q)) ||
+    (p.focal_group && p.focal_group.toLowerCase().includes(q)) ||
+    String(p.equiv_focal || '').includes(q)
+  ) : _allPhotos;
+  renderTable(filtered);
+}
 
 /* ============================================================
-   10. View Management
+   10. Utility Functions
    ============================================================ */
-window.showView = function(view) {
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function truncate(str, len) {
+  if (!str) return '';
+  return str.length > len ? str.slice(0, len) + '…' : str;
+}
+
+function formatShutter(t) {
+  if (!t) return '-';
+  if (t >= 1) return t + 's';
+  return '1/' + Math.round(1 / t) + 's';
+}
+
+function formatMonthLabel(k) {
+  const s = String(k);
+  return /^\d{4}:\d{2}$/.test(s) ? s.replace(':', '-') : s;
+}
+
+function formatDate(v) {
+  if (!v) return '-';
+  const s = String(v);
+  return /^\d{4}:\d{2}:\d{2}/.test(s) ? s.slice(0, 10).replace(/:/g, '-') : s.slice(0, 10);
+}
+
+function hexToRgba(hex, alpha) {
+  if (!hex || hex.charAt(0) !== '#') return hex;
+  const m = hex.replace('#', '');
+  const n = m.length === 3
+    ? m.split('').map(ch => ch + ch).join('')
+    : m;
+  const num = parseInt(n, 16);
+  return 'rgba(' + ((num >> 16) & 255) + ',' +
+    ((num >> 8) & 255) + ',' + (num & 255) + ',' + alpha + ')';
+}
+
+function isImageFile(file) {
+  const ok = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp',
+    'image/heif', 'image/heic', 'image/tiff', 'image/svg+xml'
+  ];
+  if (ok.includes(file.type)) return true;
+  const ext = file.name.split('.').pop().toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'heif', 'heic', 'tiff', 'tif',
+    'arw', 'cr2', 'cr3', 'nef', 'orf', 'raf', 'rw2', 'dng', 'pef'].includes(ext);
+}
+
+/* ============================================================
+   11. View Management
+   ============================================================ */
+function showView(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('view--active'));
-  const target = document.getElementById('view-' + view);
-  if (target) target.classList.add('view--active');
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.toggle('nav-btn--active', btn.dataset.view === view);
-  });
-  if (view === 'dashboard') {
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-      animateDashboard();
-    }, 100);
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-btn--active'));
+
+  const targetView = document.getElementById('view-' + view);
+  if (targetView) targetView.classList.add('view--active');
+
+  const targetBtn = document.querySelector(`.nav-btn[data-view="${view}"]`);
+  if (targetBtn) targetBtn.classList.add('nav-btn--active');
+
+  // Re-render charts when switching to dashboard
+  if (view === 'dashboard' && _lastDashboardData) {
+    setTimeout(() => refreshAllCharts(), 100);
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+}
 
-/* ============================================================
-   11. Dashboard Rendering
-   ============================================================ */
-window.renderDashboard = function(data) {
-  _lastDashboardData = data; // cache for theme re-renders
-  const s = data.stats || {};
-  const avgs = s.averages || {};
-  setText('stat-total', s.total || 0);
-  setText('stat-avg-focal', avgs.focal_length ? (avgs.focal_length + 'mm') : '-');
-  setText('stat-avg-aperture', avgs.aperture ? ('f/' + avgs.aperture) : '-');
-  setText('stat-avg-iso', avgs.iso || '-');
-  setText('stat-cameras', Object.keys(s.cameras || {}).length);
-  setText('stat-lenses', Object.keys(s.lenses || {}).length);
-
-  renderFocalGroupPie(s.focal_groups);
-  renderFocalBar(s.focal_dist);
-  renderApertureChart(s.aperture_dist);
-  renderISOChart(s.iso_dist);
-  renderCameraChart(s.cameras);
-  renderLensChart(s.lenses);
-  renderTimeline(s.monthly);
-  renderHourlyChart(s.hourly);
-  renderDOWChart(s.dow);
-  renderFormatChart(s.formats);
-  renderRecommendations(s.recommendations);
-  renderTable(data.photos || []);
-  const tc = document.getElementById('table-count');
-  if (tc) tc.textContent = (s.total || 0) + ' ' + t('photos');
-};
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
+function refreshAllCharts() {
+  if (!_lastDashboardData) return;
+  renderDashboard(_lastDashboardData);
 }
 
 /* ============================================================
-   12. Animations
-   ============================================================ */
-function animateDashboard() {
-  document.querySelectorAll('[data-stat]').forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, i * 60);
-  });
-  setTimeout(animateCounters, 300);
-}
-
-function animateCounters() {
-  document.querySelectorAll('.stat-card__value').forEach(el => {
-    const raw = el.textContent.replace(/[^0-9.]/g, '');
-    const num = parseFloat(raw);
-    if (isNaN(num) || num === 0) return;
-    const suffix = el.textContent.replace(/[0-9.]/g, '').trim();
-    const isFloat = raw.includes('.');
-    const decimals = isFloat ? raw.split('.')[1].length : 0;
-    const obj = { val: 0 };
-    const start = performance.now();
-    const duration = 1000;
-    function tick(now) {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      obj.val = num * ease;
-      el.textContent = isFloat ? obj.val.toFixed(decimals) + suffix : Math.round(obj.val) + suffix;
-      if (t < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  });
-}
-
-/* ============================================================
-   13. DOMContentLoaded — Init, Upload, Drag & Drop
+   12. Initialization
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('[PhotoLens] DOM ready, initializing...');
-
-  /* ── Theme & i18n Init ── */
   initTheme();
   applyTranslations();
-  // Set initial lang label
-  const langLabel = document.getElementById('lang-label');
-  if (langLabel) langLabel.textContent = currentLang === 'zh' ? 'EN' : '中';
 
-  /* ── Theme & lang toggles already in HTML ── */
-  const headerControls = document.getElementById('header-controls');
-  if (headerControls) {
-    headerControls.style.display = 'flex';
-  }
+  const uploadZone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('file-input');
+  const folderInput = document.getElementById('folder-input');
+  const btnFiles = document.getElementById('btn-select-files');
+  const btnFolder = document.getElementById('btn-select-folder');
+  const progressBar = document.getElementById('upload-progress');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const progressPct = document.getElementById('progress-pct');
 
-  /* ── Element References ── */
-  const uploadZone    = document.getElementById('upload-zone');
-  const fileInput     = document.getElementById('file-input');
-  const folderInput   = document.getElementById('folder-input');
-  const progressBar   = document.getElementById('upload-progress');
-  const progressFill  = document.getElementById('progress-fill');
-  const progressText  = document.getElementById('progress-text');
-  const progressPct   = document.getElementById('progress-pct');
-  const btnFiles      = document.getElementById('btn-select-files');
-  const btnFolder     = document.getElementById('btn-select-folder');
-
-  if (!uploadZone) console.error('[PhotoLens] #upload-zone not found');
-  if (!fileInput)  console.error('[PhotoLens] #file-input not found');
-  if (!progressBar) console.error('[PhotoLens] #upload-progress not found');
-
-  /* ── Upload Zone Click ── */
+  /* ── Upload Zone Events ── */
   if (uploadZone) {
     uploadZone.addEventListener('click', (e) => {
-      if (e.target.closest('button') || e.target.closest('.upload-actions')) return;
-      console.log('[PhotoLens] Zone clicked, opening file dialog');
-      if (fileInput) fileInput.click();
+      if (e.target.closest('.upload-actions')) return;
+      fileInput.click();
     });
-  }
 
-  /* ── Select Photos Button ── */
-  if (btnFiles) {
-    btnFiles.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('[PhotoLens] Select Photos clicked');
-      if (fileInput) fileInput.click();
+    uploadZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
     });
-  }
 
-  /* ── Select Folder Button ── */
-  if (btnFolder) {
-    btnFolder.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('[PhotoLens] Select Folder clicked');
-      if (folderInput) folderInput.click();
-      else if (fileInput) fileInput.click();
-    });
-  }
-
-  /* ── File Input Change ── */
-  if (fileInput) {
-    fileInput.addEventListener('change', function(e) {
-      console.log('[PhotoLens] file-input change event, files:', e.target.files.length);
-      handleFiles(Array.from(e.target.files));
-      this.value = '';
-    });
-  }
-
-  /* ── Folder Input Change ── */
-  if (folderInput) {
-    folderInput.addEventListener('change', function(e) {
-      console.log('[PhotoLens] folder-input change event, files:', e.target.files.length);
-      handleFiles(Array.from(e.target.files));
-      this.value = '';
-    });
-  }
-
-  /* ── Drag & Drop ── */
-  if (uploadZone) {
     uploadZone.addEventListener('dragover', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      uploadZone.classList.add('drag-over');
+      uploadZone.classList.add('dragover');
     });
-    uploadZone.addEventListener('dragleave', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('drag-over');
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
     });
+
     uploadZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      uploadZone.classList.remove('drag-over');
-      console.log('[PhotoLens] Files dropped');
-      const items = e.dataTransfer.items;
-      if (items && items.length > 0) {
-        const entries = [];
-        for (let i = 0; i < items.length; i++) {
-          const entry = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
-          if (entry) entries.push(entry);
-        }
-        if (entries.length > 0) {
-          readEntries(entries).then(files => handleFiles(files));
-          return;
-        }
-      }
-      handleFiles(Array.from(e.dataTransfer.files));
+      uploadZone.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      handleFiles(files);
     });
   }
 
-  /* ── Recursively read directory entries ── */
-  function readEntries(entries) {
-    return new Promise(async (resolve) => {
-      const files = [];
-      for (const entry of entries) {
-        if (entry.isFile) {
-          const f = await new Promise(r => entry.file(r));
-          files.push(f);
-        } else if (entry.isDirectory) {
-          const reader = entry.createReader();
-          const subEntries = await new Promise(r => reader.readEntries(r));
-          const subFiles = await readEntries(subEntries);
-          files.push(...subFiles);
-        }
-      }
-      resolve(files);
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) handleFiles(Array.from(fileInput.files));
     });
+  }
+
+  if (folderInput) {
+    folderInput.addEventListener('change', () => {
+      if (folderInput.files.length) handleFiles(Array.from(folderInput.files));
+    });
+  }
+
+  if (btnFiles) {
+    btnFiles.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
+
+  if (btnFolder) {
+    btnFolder.addEventListener('click', (e) => {
+      e.stopPropagation();
+      folderInput.click();
+    });
+  }
+
+  /* ── Read Directory Entries ── */
+  async function readEntries(entries) {
+    const files = [];
+    for (const entry of entries) {
+      if (entry.isFile) {
+        const f = await new Promise(r => entry.file(r));
+        files.push(f);
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const subEntries = await new Promise(r => reader.readEntries(r));
+        const subFiles = await readEntries(subEntries);
+        files.push(...subFiles);
+      }
+    }
+    return files;
   }
 
   /* ── Handle Files ── */
@@ -840,7 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show progress
     if (progressBar) progressBar.classList.add('is-visible');
-    if (progressFill) progressFill.style.width = '0%';
+    if (progressFill) progressFill.style.transform = 'scaleX(0)';
     if (progressText) progressText.textContent = t('upload.preparing') + ' ' + files.length + ' ' + t('upload.files');
     if (progressPct) progressPct.textContent = '0%';
 
@@ -860,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pct = 0;
     const interval = setInterval(() => {
       pct = Math.min(pct + Math.random() * 15, 85);
-      if (progressFill) progressFill.style.width = pct + '%';
+      if (progressFill) progressFill.style.transform = "scaleX(" + (pct/100) + ")";
       if (progressPct) progressPct.textContent = Math.round(pct) + '%';
     }, 300);
 
@@ -880,14 +1029,14 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[PhotoLens] Analysis complete:', data.total_processed, 'photos');
 
       clearInterval(interval);
-      if (progressFill) progressFill.style.width = '100%';
+      if (progressFill) progressFill.style.transform = 'scaleX(1)';
       if (progressPct) progressPct.textContent = '100%';
       if (progressText) progressText.textContent = t('upload.done') + ' ' + data.total_processed + ' ' + t('upload.processed');
 
       setTimeout(() => {
         if (data.total_processed === 0 && data.errors && data.errors.length > 0) {
           if (progressText) progressText.textContent = t('upload.exif_fail') + ' ' + data.errors.join(', ');
-          if (progressFill) progressFill.style.width = '0%';
+          if (progressFill) progressFill.style.transform = 'scaleX(0)';
           if (progressPct) progressPct.textContent = '0%';
           if (uploadZone) {
             uploadZone.style.opacity = '1';
@@ -909,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('[PhotoLens] Upload error:', err);
       clearInterval(interval);
       if (progressText) progressText.textContent = 'Error: ' + err.message;
-      if (progressFill) progressFill.style.width = '0%';
+      if (progressFill) progressFill.style.transform = 'scaleX(0)';
       if (progressPct) progressPct.textContent = '0%';
       if (uploadZone) {
         uploadZone.style.opacity = '1';
@@ -923,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navDash = document.getElementById('nav-dashboard');
     if (navDash) navDash.style.display = 'none';
     if (progressBar) progressBar.classList.remove('is-visible');
-    if (progressFill) progressFill.style.width = '0%';
+    if (progressFill) progressFill.style.transform = 'scaleX(0)';
     if (uploadZone) {
       uploadZone.style.opacity = '1';
       uploadZone.style.pointerEvents = 'auto';

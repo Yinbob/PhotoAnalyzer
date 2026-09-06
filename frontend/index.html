@@ -6,18 +6,20 @@
 <title>PhotoLens Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="vendor/echarts.min.js"></script>
 <script src="vendor/gsap.min.js"></script>
 <script src="vendor/ScrollTrigger.min.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Ambient background -->
+  <!-- Ambient mesh background -->
   <div class="ambient-bg">
+    <div class="ambient-mesh"></div>
     <div class="ambient-orb ambient-orb--1"></div>
     <div class="ambient-orb ambient-orb--2"></div>
     <div class="ambient-orb ambient-orb--3"></div>
+    <div class="ambient-orb ambient-orb--4"></div>
   </div>
 
   <!-- Header -->
@@ -25,9 +27,43 @@
     <div class="header-inner">
       <div class="logo" id="logo">
         <div class="logo-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/>
+          <!-- Camera Aperture SVG Logo -->
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer lens ring -->
+            <circle cx="24" cy="24" r="20" stroke="url(#lens-grad)" stroke-width="2.5" opacity="0.9"/>
+            <circle cx="24" cy="24" r="16" stroke="url(#lens-grad)" stroke-width="1.5" opacity="0.5"/>
+            <!-- Aperture blades -->
+            <path d="M24 8 L28 16 L24 14 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M24 8 L20 16 L24 14 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <path d="M37.6 16 L32 22 L33.8 18.4 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M37.6 16 L34.4 24 L36 20 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <path d="M37.6 32 L32 26 L33.8 29.6 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M37.6 32 L34.4 24 L36 28 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <path d="M24 40 L28 32 L24 34 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M24 40 L20 32 L24 34 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <path d="M10.4 32 L16 26 L14.2 29.6 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M10.4 32 L13.6 24 L12 28 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <path d="M10.4 16 L16 22 L14.2 18.4 Z" fill="url(#blade-grad)" opacity="0.85"/>
+            <path d="M10.4 16 L13.6 24 L12 20 Z" fill="url(#blade-grad)" opacity="0.7"/>
+            <!-- Center circle -->
+            <circle cx="24" cy="24" r="6" fill="url(#center-grad)" opacity="0.9"/>
+            <circle cx="24" cy="24" r="3" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+            <!-- Reflection dot -->
+            <circle cx="20" cy="20" r="1.5" fill="rgba(255,255,255,0.4)"/>
+            <defs>
+              <linearGradient id="lens-grad" x1="4" y1="4" x2="44" y2="44">
+                <stop offset="0%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#0EA5E9"/>
+              </linearGradient>
+              <linearGradient id="blade-grad" x1="0" y1="0" x2="48" y2="48">
+                <stop offset="0%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#0369A1"/>
+              </linearGradient>
+              <radialGradient id="center-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#1A1E2E"/>
+                <stop offset="100%" stop-color="#0D1117"/>
+              </radialGradient>
+            </defs>
           </svg>
         </div>
         <div class="logo-text">
@@ -67,15 +103,34 @@
       </div>
 
       <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="Upload photos">
-        <div class="upload-zone__ring">
-          <svg class="upload-zone__ring-svg" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="90" fill="none" stroke="url(#ring-grad)" stroke-width="1" stroke-dasharray="6 4" opacity="0.5"/>
+        <!-- Aperture animation ring -->
+        <div class="upload-zone__aperture">
+          <svg viewBox="0 0 200 200" class="aperture-svg">
             <defs>
               <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="var(--accent)"/>
-                <stop offset="100%" stop-color="var(--accent-end)"/>
+                <stop offset="0%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#0EA5E9"/>
               </linearGradient>
             </defs>
+            <!-- Outer ring -->
+            <circle cx="100" cy="100" r="88" fill="none" stroke="url(#ring-grad)" stroke-width="1.5" opacity="0.4" stroke-dasharray="8 4"/>
+            <!-- Inner ring with animation -->
+            <circle cx="100" cy="100" r="72" fill="none" stroke="url(#ring-grad)" stroke-width="1" opacity="0.25" stroke-dasharray="4 6" class="aperture-ring-inner"/>
+            <!-- Aperture blades hint -->
+            <g opacity="0.15">
+              <path d="M100 30 L110 55 L100 50 Z" fill="#38BDF8"/>
+              <path d="M100 30 L90 55 L100 50 Z" fill="#0369A1"/>
+              <path d="M155 55 L135 72 L142 63 Z" fill="#38BDF8"/>
+              <path d="M155 55 L140 80 L148 68 Z" fill="#0369A1"/>
+              <path d="M155 145 L135 128 L142 137 Z" fill="#38BDF8"/>
+              <path d="M155 145 L140 120 L148 132 Z" fill="#0369A1"/>
+              <path d="M100 170 L110 145 L100 150 Z" fill="#38BDF8"/>
+              <path d="M100 170 L90 145 L100 150 Z" fill="#0369A1"/>
+              <path d="M45 145 L65 128 L58 137 Z" fill="#38BDF8"/>
+              <path d="M45 145 L60 120 L52 132 Z" fill="#0369A1"/>
+              <path d="M45 55 L65 72 L58 63 Z" fill="#38BDF8"/>
+              <path d="M45 55 L60 80 L52 68 Z" fill="#0369A1"/>
+            </g>
           </svg>
         </div>
         <div class="upload-zone__icon">
@@ -114,33 +169,33 @@
           <div class="upload-progress__fill" id="progress-fill"></div>
         </div>
         <div class="upload-progress__info">
-          <span id="progress-text" data-i18n="upload.analyzing">正在分析照片...</span>
+          <span id="progress-text"></span>
           <span id="progress-pct">0%</span>
         </div>
       </div>
 
-      <!-- Upload Features -->
-      <div class="upload-features">
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+      <!-- Feature Cards -->
+      <div class="features-grid">
+        <div class="feature-card glass-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-5.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.exif">EXIF 提取</div>
-          <div class="upload-feature__desc" data-i18n="feature.exif.desc">完整的元数据解析</div>
+          <h4 data-i18n="feat.exif">EXIF 深度解析</h4>
+          <p data-i18n="feat.exif.desc">精确提取焦距、光圈、ISO 等核心参数</p>
         </div>
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <div class="feature-card glass-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.charts">可视化图表</div>
-          <div class="upload-feature__desc" data-i18n="feature.charts.desc">交互式数据展示</div>
+          <h4 data-i18n="feat.dash">可视化仪表板</h4>
+          <p data-i18n="feat.dash.desc">交互式图表展现你的拍摄习惯</p>
         </div>
-        <div class="upload-feature">
-          <div class="upload-feature__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <div class="feature-card glass-card">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
-          <div class="upload-feature__title" data-i18n="feature.insights">AI 洞察</div>
-          <div class="upload-feature__desc" data-i18n="feature.insights.desc">智能镜头建议</div>
+          <h4 data-i18n="feat.lens">镜头推荐</h4>
+          <p data-i18n="feat.lens.desc">基于数据分析的智能镜头升级建议</p>
         </div>
       </div>
     </section>
@@ -152,64 +207,94 @@
       <!-- Stats Row -->
       <div class="stats-row">
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--photos">📷</div>
+          <div class="stat-card__icon stat-card__icon--photos">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-total">0</div>
           <div class="stat-card__label" data-i18n="stat.photos">照片总数</div>
         </div>
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--focal">🔭</div>
+          <div class="stat-card__icon stat-card__icon--focal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-focal">-</div>
           <div class="stat-card__label" data-i18n="stat.focal">平均焦距</div>
         </div>
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--aperture">⭕</div>
+          <div class="stat-card__icon stat-card__icon--aperture">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-aperture">-</div>
           <div class="stat-card__label" data-i18n="stat.aperture">平均光圈</div>
         </div>
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--iso">🔆</div>
+          <div class="stat-card__icon stat-card__icon--iso">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-avg-iso">-</div>
           <div class="stat-card__label" data-i18n="stat.iso">平均 ISO</div>
         </div>
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--camera">📸</div>
+          <div class="stat-card__icon stat-card__icon--camera">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-cameras">0</div>
           <div class="stat-card__label" data-i18n="stat.cameras">相机机身</div>
         </div>
         <div class="stat-card glass-card" data-stat>
-          <div class="stat-card__icon stat-card__icon--lens">🔍</div>
+          <div class="stat-card__icon stat-card__icon--lens">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+          </div>
           <div class="stat-card__value" id="stat-lenses">0</div>
           <div class="stat-card__label" data-i18n="stat.lenses">使用镜头</div>
         </div>
       </div>
 
+      <!-- Focal Length HERO Section -->
+      <div class="focal-hero">
+        <div class="focal-hero__header">
+          <div class="focal-hero__title-group">
+            <h2 class="focal-hero__title">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              <span data-i18n="focalHero.title">焦段深度分析</span>
+            </h2>
+            <span class="focal-hero__badge" data-i18n="focalHero.badge">核心洞察</span>
+          </div>
+          <p class="focal-hero__desc" data-i18n="focalHero.desc">了解你的镜头焦段使用习惯，为镜头选择提供数据支撑</p>
+        </div>
+        <div class="focal-hero__charts">
+          <div class="focal-hero__chart focal-hero__chart--pie">
+            <div class="chart-card glass-card">
+              <div class="chart-card__head">
+                <div class="chart-card__title-group">
+                  <h3 data-i18n="chart.focalGroup">焦距分组</h3>
+                  <span class="chart-card__tag" data-i18n="chart.focalGroup.tag">分布</span>
+                </div>
+              </div>
+              <div class="chart-card__body">
+                <div class="chart" id="chart-focal-group"></div>
+              </div>
+            </div>
+          </div>
+          <div class="focal-hero__chart focal-hero__chart--bar">
+            <div class="chart-card glass-card">
+              <div class="chart-card__head">
+                <div class="chart-card__title-group">
+                  <h3 data-i18n="chart.focalBar">焦距分布</h3>
+                  <span class="chart-card__tag" data-i18n="chart.focalBar.tag">按毫米</span>
+                </div>
+              </div>
+              <div class="chart-card__body">
+                <div class="chart" id="chart-focal-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Charts Grid -->
       <div class="charts-grid">
-        <div class="chart-card" data-chart>
-          <div class="chart-card__head">
-            <div class="chart-card__title-group">
-              <h3 data-i18n="chart.focalGroup">焦距分组</h3>
-              <span class="chart-card__tag" data-i18n="chart.focalGroup.tag">分布</span>
-            </div>
-          </div>
-          <div class="chart-card__body">
-            <div class="chart" id="chart-focal-group"></div>
-          </div>
-        </div>
-
-        <div class="chart-card" data-chart>
-          <div class="chart-card__head">
-            <div class="chart-card__title-group">
-              <h3 data-i18n="chart.focalBar">焦距分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.focalBar.tag">按毫米</span>
-            </div>
-          </div>
-          <div class="chart-card__body">
-            <div class="chart" id="chart-focal-bar"></div>
-          </div>
-        </div>
-
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.aperture">光圈使用</h3>
@@ -221,7 +306,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.iso">ISO 分布</h3>
@@ -233,7 +318,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.camera">相机使用</h3>
@@ -245,7 +330,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.lens">镜头使用</h3>
@@ -257,7 +342,7 @@
           </div>
         </div>
 
-        <div class="chart-card chart-card--wide" data-chart>
+        <div class="chart-card chart-card--wide glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.timeline">拍摄时间线</h3>
@@ -269,7 +354,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.hourly">按小时拍摄分布</h3>
@@ -281,7 +366,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.dow">星期分布</h3>
@@ -293,7 +378,7 @@
           </div>
         </div>
 
-        <div class="chart-card" data-chart>
+        <div class="chart-card glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.format">文件格式</h3>
@@ -307,7 +392,7 @@
       </div>
 
       <!-- Recommendations -->
-      <div class="recs-card" id="recommendations" style="display:none">
+      <div class="recs-card glass-card" id="recommendations" style="display:none">
         <div class="chart-card__head">
           <div class="chart-card__title-group">
             <h3 data-i18n="recs.title">镜头升级建议</h3>
@@ -321,7 +406,7 @@
       </div>
 
       <!-- Data Table -->
-      <div class="table-card">
+      <div class="table-card glass-card">
         <div class="chart-card__head">
           <div class="chart-card__title-group">
             <h3 data-i18n="table.title">照片详情</h3>
