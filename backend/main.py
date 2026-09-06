@@ -1,23 +1,28 @@
 """
-PhotoAnalyzer - FastAPI Backend
+PhotoLens Analyzer - FastAPI Backend
 Serves the frontend and provides EXIF analysis API.
 """
 import os
+import hashlib
 import json
 import tempfile
-import shutil
 from pathlib import Path
-from collections import Counter, defaultdict
-from typing import List
+from datetime import datetime
+from collections import Counter
+from typing import Any, List, Optional
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, Form, Query, Request
+from fastapi import Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from backend.exif_engine import ExifEngine, IMAGE_EXTENSIONS
+from backend.auth import AuthManager
+import backend.database as db
 
-app = FastAPI(title="PhotoAnalyzer")
+app = FastAPI(title="PhotoLens Analyzer")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +30,54 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 CAMERA_DATA_PATH = Path(__file__).resolve().parent / "camera_data.json"
 
 engine = ExifEngine(str(CAMERA_DATA_PATH))
+auth = AuthManager()
+
+db.init_db()
+
+
+class PasswordRequest(BaseModel):
+    password: str
+    new_password: Optional[str] = None
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class CollectionRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+
+
+class BulkCollectionsRequest(BaseModel):
+    photo_ids: List[int]
+    add_collection_ids: List[int] = []
+    remove_collection_ids: List[int] = []
+
+
+class BulkPhotoRequest(BaseModel):
+    photo_ids: List[int]
+
+
+class PurgeRequest(BaseModel):
+    confirm: str
+
+
+class BatchCollectionRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+
+def require_authenticated(request: Request):
+    session = auth.current_session(request)
+    if session is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Data management requires login.",
+        )
+    return session
 
 
 @app.get("/")
@@ -33,10 +86,31 @@ async def index():
 
 
 @app.post("/api/analyze")
-async def analyze_photos(files: List[UploadFile] = File(...)):
+async def analyze_photos(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    collection_id: Optional[int] = Form(None),
+):
     """Analyze uploaded photo files and return EXIF statistics."""
     results = []
     errors = []
+    saved_count = 0
+    duplicate_count = 0
+    unsupported_count = 0
+    database_error = None
+    target_collection = None
+    authenticated = auth.is_authenticated(request)
+    try:
+        batch_id = db.create_batch(len(files))
+    except Exception as exc:
+        batch_id = None
+        database_error = str(exc)
+
+    if authenticated and collection_id is not None:
+        try:
+            target_collection = db.get_collection(collection_id)
+        except Exception:
+            target_collection = None
 
     with tempfile.TemporaryDirectory() as tmpdir:
         for upload in files:
@@ -49,6 +123,7 @@ async def analyze_photos(files: List[UploadFile] = File(...)):
             ext = Path(safe_name).suffix.lower()
             if ext not in IMAGE_EXTENSIONS:
                 errors.append(f"Unsupported format: {upload.filename}")
+                unsupported_count += 1
                 continue
 
             file_path = os.path.join(tmpdir, safe_name)
@@ -61,6 +136,7 @@ async def analyze_photos(files: List[UploadFile] = File(...)):
                     counter += 1
 
             content = await upload.read()
+            content_hash = hashlib.sha256(content).hexdigest()
             with open(file_path, "wb") as f:
                 f.write(content)
 
@@ -71,6 +147,34 @@ async def analyze_photos(files: List[UploadFile] = File(...)):
                 errors.append(f"{upload.filename}: {data['error']}")
             else:
                 results.append(data)
+                if batch_id is None:
+                    continue
+                try:
+                    photo_id, inserted = db.save_photo(
+                        data, content_hash, len(content), batch_id
+                    )
+                    if inserted:
+                        saved_count += 1
+                    else:
+                        duplicate_count += 1
+                    if target_collection:
+                        db.add_photo_to_collection(photo_id, target_collection["id"])
+                except Exception as exc:
+                    database_error = str(exc)
+                    errors.append(f"Could not save EXIF data: {upload.filename}")
+
+    if batch_id is not None:
+        try:
+            db.update_batch(
+                batch_id,
+                parsed_count=len(results),
+                saved_count=saved_count,
+                duplicate_count=duplicate_count,
+                unsupported_count=unsupported_count,
+                error_count=len(errors),
+            )
+        except Exception as exc:
+            database_error = str(exc)
 
     stats = compute_stats(results)
     return JSONResponse({
@@ -79,6 +183,14 @@ async def analyze_photos(files: List[UploadFile] = File(...)):
         "errors": errors,
         "total_processed": len(results),
         "total_errors": len(errors),
+        "persistence": {
+            "batch_id": batch_id,
+            "saved_count": saved_count,
+            "duplicate_count": duplicate_count,
+            "unsupported_count": unsupported_count,
+            "collection_id": target_collection["id"] if target_collection else None,
+            "db_error": database_error,
+        },
     })
 
 
@@ -152,16 +264,15 @@ def compute_stats(photos: list) -> dict:
     hourly_sorted = {h: hourly.get(h, 0) for h in range(24)}
 
     # Day of week
-    from datetime import datetime
     dow_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     dow = Counter()
     for p in photos:
         date_str = p.get("date", "")
         if date_str:
             try:
-                dt = datetime.strptime(date_str[:19], "%Y-%m-%d %H:%M:%S")
+                dt = datetime.fromisoformat(date_str[:19])
                 dow[dow_names[dt.weekday()]] += 1
-            except (ValueError, IndexError):
+            except (ValueError, TypeError):
                 pass
     dow_sorted = {d: dow.get(d, 0) for d in dow_names}
 
@@ -307,10 +418,339 @@ async def export_csv(files: List[UploadFile] = File(...)):
         "filename": "photoanalysis_export.csv"
     })
 
+
+@app.get("/api/auth/status")
+async def auth_status(request: Request):
+    return {
+        "configured": auth.configured,
+        "authenticated": auth.is_authenticated(request),
+    }
+
+
+@app.post("/api/auth/setup")
+async def setup_password(payload: PasswordRequest, response: Response):
+    auth.setup_password(payload.password)
+    auth.login(payload.password, response)
+    return {"configured": True, "authenticated": True}
+
+
+@app.post("/api/auth/login")
+async def login(payload: PasswordRequest, response: Response):
+    auth.login(payload.password, response)
+    return {"authenticated": True}
+
+
+@app.post("/api/auth/logout")
+async def logout(request: Request, response: Response):
+    auth.logout(request.cookies.get("photolens_session"), response)
+    return {"authenticated": False}
+
+
+@app.post("/api/auth/change-password")
+async def change_password(
+    payload: ChangePasswordRequest,
+    request: Request,
+    response: Response,
+    _session: Any = Depends(require_authenticated),
+):
+    auth.change_password(
+        payload.current_password, payload.new_password, request, response
+    )
+    return {"authenticated": True}
+
+
+@app.get("/api/collections")
+async def get_collections(_session: Any = Depends(require_authenticated)):
+    return {"collections": db.list_collections()}
+
+
+@app.post("/api/collections")
+async def post_collection(
+    payload: CollectionRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    try:
+        collection = db.create_collection(payload.name, payload.description, payload.color)
+    except Exception as exc:
+        if "UNIQUE" in str(exc):
+            raise HTTPException(status_code=409, detail="A collection with this name already exists.")
+        raise HTTPException(status_code=400, detail="Could not create collection.")
+    return collection
+
+
+@app.patch("/api/collections/{collection_id}")
+async def patch_collection(
+    collection_id: int,
+    payload: CollectionRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    if not db.get_collection(collection_id):
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    updates = {
+        "name": payload.name.strip(),
+        "description": payload.description,
+        "color": payload.color,
+    }
+    try:
+        collection = db.update_collection(collection_id, updates)
+    except Exception as exc:
+        if "UNIQUE" in str(exc):
+            raise HTTPException(status_code=409, detail="A collection with this name already exists.")
+        raise HTTPException(status_code=400, detail="Could not update collection.")
+    return collection
+
+
+@app.delete("/api/collections/{collection_id}")
+async def delete_collection(
+    collection_id: int,
+    _session: Any = Depends(require_authenticated),
+):
+    if not db.delete_collection(collection_id):
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    return {"deleted": True}
+
+
+@app.post("/api/collections/{collection_id}/photos")
+async def add_collection_photos(
+    collection_id: int,
+    payload: BulkPhotoRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    if not db.get_collection(collection_id):
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    added = sum(
+        1 for photo_id in payload.photo_ids
+        if db.add_photo_to_collection(photo_id, collection_id)
+    )
+    return {"added": added}
+
+
+@app.post("/api/collections/{collection_id}/photos/remove")
+async def remove_collection_photos(
+    collection_id: int,
+    payload: BulkPhotoRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    if not db.get_collection(collection_id):
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    removed = sum(
+        1 for photo_id in payload.photo_ids
+        if db.remove_photo_from_collection(photo_id, collection_id)
+    )
+    return {"removed": removed}
+
+
+@app.get("/api/photos/options")
+async def photo_options(_session: Any = Depends(require_authenticated)):
+    return {
+        "cameras": db.photo_options("camera_model"),
+        "lenses": db.photo_options("lens_model"),
+        "formats": db.photo_options("format"),
+    }
+
+
+@app.get("/api/photos/summary")
+async def photo_summary(_session: Any = Depends(require_authenticated)):
+    return db.app_summary()
+
+
+@app.get("/api/photos")
+async def get_photos(
+    collection_id: Any = "all",
+    q: str = Query(""),
+    camera: str = Query(""),
+    lens: str = Query(""),
+    format: str = Query(""),
+    date_from: str = Query(""),
+    date_to: str = Query(""),
+    deleted: bool = False,
+    sort: str = Query("captured_at"),
+    order: str = Query("desc"),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _session: Any = Depends(require_authenticated),
+):
+    return db.list_photos(
+        collection_id=collection_id,
+        query=q,
+        camera=camera,
+        lens=lens,
+        file_format=format,
+        date_from=date_from,
+        date_to=date_to,
+        deleted=deleted,
+        sort=sort,
+        order=order,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@app.get("/api/photos/{photo_id}")
+async def get_photo_detail(
+    photo_id: int,
+    _session: Any = Depends(require_authenticated),
+):
+    photo = db.get_photo(photo_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found.")
+    photo["date"] = photo.get("captured_at") or photo.get("date_original_raw")
+    return photo
+
+
+@app.patch("/api/photos/{photo_id}")
+async def patch_photo(
+    photo_id: int,
+    payload: dict[str, Any],
+    _session: Any = Depends(require_authenticated),
+):
+    current = db.get_photo(photo_id)
+    if not current:
+        raise HTTPException(status_code=404, detail="Photo not found.")
+
+    allowed_text = {"filename", "camera_model", "lens_model", "format"}
+    allowed_numbers = {
+        "focal_length", "focal_35mm", "aperture", "iso", "exposure_time"
+    }
+    updates: dict[str, Any] = {}
+    for key, value in payload.items():
+        if key in allowed_text:
+            updates[key] = str(value).strip()
+            if key == "format":
+                updates[key] = updates[key].upper()
+        elif key in allowed_numbers:
+            try:
+                number = float(value) if value not in (None, "") else None
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=400, detail=f"{key} must be numeric.")
+            if key == "iso":
+                updates[key] = int(number) if number is not None else None
+            else:
+                updates[key] = number
+        elif key == "captured_at":
+            if value in (None, ""):
+                updates[key] = None
+            else:
+                parsed = db.parse_exif_date(value)
+                if not parsed:
+                    raise HTTPException(status_code=400, detail="Invalid captured date.")
+                updates[key] = parsed
+
+    if any(key in updates for key in ("focal_length", "focal_35mm", "camera_model")):
+        focal_length = updates.get("focal_length", current.get("focal_length"))
+        focal_35mm = updates.get("focal_35mm", current.get("focal_35mm"))
+        camera_model = updates.get("camera_model", current.get("camera_model"))
+        if focal_35mm and focal_35mm > 0:
+            equiv_focal = focal_35mm
+        elif focal_length and focal_length > 0:
+            crop = engine.get_crop_factor(camera_model or "")
+            equiv_focal = round(focal_length * crop, 1)
+        else:
+            equiv_focal = None
+        updates["equiv_focal"] = equiv_focal
+        updates["focal_group"] = (
+            engine.get_focal_group(equiv_focal) if equiv_focal else "unknown"
+        )
+
+    photo = db.update_photo(photo_id, updates)
+    photo["date"] = photo.get("captured_at") or photo.get("date_original_raw")
+    return photo
+
+
+@app.delete("/api/photos/{photo_id}")
+async def delete_photo(
+    photo_id: int,
+    _session: Any = Depends(require_authenticated),
+):
+    count = db.set_photo_deleted([photo_id], True)
+    if count == 0:
+        raise HTTPException(status_code=404, detail="Photo not found.")
+    return {"deleted": count}
+
+
+@app.post("/api/photos/bulk-delete")
+async def bulk_delete_photos(
+    payload: BulkPhotoRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    return {"deleted": db.set_photo_deleted(payload.photo_ids, True)}
+
+
+@app.post("/api/photos/bulk-restore")
+async def bulk_restore_photos(
+    payload: BulkPhotoRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    return {"restored": db.set_photo_deleted(payload.photo_ids, False)}
+
+
+@app.post("/api/photos/bulk-collections")
+async def bulk_collections(
+    payload: BulkCollectionsRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    added = 0
+    removed = 0
+    for collection_id in payload.add_collection_ids:
+        if not db.get_collection(collection_id):
+            raise HTTPException(status_code=404, detail="Collection not found.")
+        added += sum(
+            1 for photo_id in payload.photo_ids
+            if db.add_photo_to_collection(photo_id, collection_id)
+        )
+    for collection_id in payload.remove_collection_ids:
+        if not db.get_collection(collection_id):
+            raise HTTPException(status_code=404, detail="Collection not found.")
+        removed += sum(
+            1 for photo_id in payload.photo_ids
+            if db.remove_photo_from_collection(photo_id, collection_id)
+        )
+    return {"added": added, "removed": removed}
+
+
+@app.post("/api/photos/purge")
+async def purge_photos(
+    payload: PurgeRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    if payload.confirm != "DELETE":
+        raise HTTPException(status_code=400, detail="Type DELETE to confirm.")
+    return {"purged": db.purge_deleted()}
+
+
+@app.get("/api/history/stats")
+async def history_stats(
+    scope: str = Query("all"),
+    collection_id: Any = Query(None),
+    _session: Any = Depends(require_authenticated),
+):
+    photos = db.photos_for_stats(scope, collection_id)
+    return {
+        "scope": scope,
+        "collection_id": collection_id,
+        "total": len(photos),
+        "stats": compute_stats(photos),
+    }
+
+
+@app.get("/api/batches")
+async def get_batches(_session: Any = Depends(require_authenticated)):
+    return {"batches": db.list_batches()}
+
+
+@app.post("/api/batches/{batch_id}/collection")
+async def batch_to_collection(
+    batch_id: int,
+    payload: BatchCollectionRequest,
+    _session: Any = Depends(require_authenticated),
+):
+    collection = db.create_collection_from_batch(batch_id, payload.name, payload.description or "")
+    if not collection:
+        raise HTTPException(status_code=404, detail="This batch has no active photos.")
+    return collection
+
 # Serve frontend static files
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+

@@ -31,7 +31,7 @@ RAW_EXTENSIONS = {'.arw', '.cr2', '.cr3', '.nef', '.orf', '.raf', '.rw2',
                   '.dng', '.pef', '.srw', '.x3f', '.3fr', '.ari', '.bay',
                   '.cap', '.iiq', '.erf', '.fff', '.mef', '.mos', '.mrw',
                   '.nrw', '.ptx', '.raw', '.rwl', '.sr2', '.srf', '.kdc',
-                  '.dcr', '.erf', '.mrw', '.raw'}
+                  '.dcr'}
 HEIF_EXTENSIONS = {'.heif', '.heic'}
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.tiff', '.tif', '.png', '.webp'} | RAW_EXTENSIONS | HEIF_EXTENSIONS
 

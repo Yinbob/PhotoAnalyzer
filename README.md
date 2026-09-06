@@ -75,8 +75,6 @@ python start_server.py
 # → http://localhost:8765
 ```
 
-> **注意：** `start_server.py` 默认端口 **8765**，支持热重载。旧文档曾引用 8080 端口，`main.py` 的 `__main__` 使用 8000 — 开发请用 `start_server.py`。
-
 ## 📁 项目结构
 
 ```
@@ -84,14 +82,20 @@ PhotoAnalyzer/
 ├── backend/
 │   ├── main.py              # FastAPI 服务器与 API 端点
 │   ├── exif_engine.py       # 多格式 EXIF 提取引擎
-│   └── camera_data.json     # 相机裁切系数数据库
+│   ├── database.py          # SQLite 持久化层
+│   ├── auth.py              # 单用户认证与会话管理
+│   ├── camera_data.json     # 相机裁切系数数据库
+│   └── data/                # 运行时数据库（已 gitignore）
 ├── frontend/
 │   ├── index.html           # 仪表板页面
 │   ├── styles.css           # "午夜镜头" 设计系统
 │   ├── app.js               # 前端逻辑与图表
 │   └── vendor/              # ECharts、GSAP、ScrollTrigger（本地）
+├── docs/previews/           # 界面截图
 ├── requirements.txt
 ├── start_server.py          # 开发入口
+├── .gitignore
+├── LICENSE                  # MIT 许可证
 └── AGENTS.md                # AI 助手指引
 ```
 
@@ -121,8 +125,6 @@ PhotoAnalyzer/
 
 ## 🔑 关键设计决策
 
-> 从 `DESIGN_CHANGES.md` 整理（整合后已删除）。
-
 - **配色演变**：原始紫色 → 琥珀金 `#F0A030` → 当前冰川蓝 `#38BDF8`
 - **数据契约**：`/api/analyze` 返回 `{photos, stats, errors, …}`，前端读取 `data.stats.*`。修改 `compute_stats` 字段名会破坏 `app.js`
 - **响应式断点**：>1024px 满列 → 768–1024px 两列 → <640px 单列
@@ -132,9 +134,8 @@ PhotoAnalyzer/
 
 ## ⚠️ 已知问题
 
-- HEIF/HEIC 支持需要 `pillow-heif`，该依赖**未**列入 `requirements.txt`（可选导入，缺失时静默跳过）
-- `requirements.txt` 中的 `exif`、`numpy`、`pandas` 实际未被代码使用
-- 无 `.gitignore` — `__pycache__`、`.venv`、`.bak` 文件已入库
+- Google Fonts 通过 CDN 加载（`index.html`），离线环境下字体不可用
+- `camera_data.json` 无来源元数据，裁切系数准确性无法追溯
 
 ## 📄 许可证
 
@@ -215,8 +216,6 @@ python start_server.py
 # → http://localhost:8765
 ```
 
-> **Note:** `start_server.py` runs on port **8765** with auto-reload. Older docs referenced port 8080, and `main.py` `__main__` uses 8000 — use `start_server.py` for development.
-
 ## 📁 Project Structure
 
 ```
@@ -224,14 +223,20 @@ PhotoAnalyzer/
 ├── backend/
 │   ├── main.py              # FastAPI server & API endpoints
 │   ├── exif_engine.py       # Multi-format EXIF engine
-│   └── camera_data.json     # Crop-factor database
+│   ├── database.py          # SQLite persistence layer
+│   ├── auth.py              # Single-user auth & session management
+│   ├── camera_data.json     # Crop-factor database
+│   └── data/                # Runtime database (gitignored)
 ├── frontend/
 │   ├── index.html           # Dashboard page
 │   ├── styles.css           # "Midnight Lens" design system
 │   ├── app.js               # Frontend logic & charts
 │   └── vendor/              # ECharts, GSAP, ScrollTrigger (local)
+├── docs/previews/           # UI screenshots
 ├── requirements.txt
 ├── start_server.py          # Dev entry point
+├── .gitignore
+├── LICENSE                  # MIT License
 └── AGENTS.md                # Agent instructions
 ```
 
@@ -261,8 +266,6 @@ PhotoAnalyzer/
 
 ## 🔑 Design Decisions
 
-> Condensed from `DESIGN_CHANGES.md` (removed after consolidation).
-
 - **Color evolution**: Original purple → Amber `#F0A030` → current Glacier Blue `#38BDF8`
 - **Data contract**: `/api/analyze` returns `{photos, stats, errors, …}`; frontend reads everything from `data.stats.*`. Changing `compute_stats` keys in `main.py` breaks `app.js`.
 - **Responsive breakpoints**: >1024px full grid → 768–1024px 2-col → <640px 1-col
@@ -272,9 +275,8 @@ PhotoAnalyzer/
 
 ## ⚠️ Known Issues
 
-- HEIF/HEIC support requires `pillow-heif`, which is **not** in `requirements.txt` (optional import, silently disabled)
-- `requirements.txt` lists `exif`, `numpy`, `pandas` which are unused by the code
-- No `.gitignore` — `__pycache__`, `.venv`, `.bak` files are committed
+- Google Fonts loaded via CDN in `index.html`; unavailable offline
+- `camera_data.json` has no source metadata; crop factor accuracy is unverifiable
 
 ## 📄 License
 

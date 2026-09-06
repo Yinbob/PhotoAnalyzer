@@ -80,8 +80,15 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           <span data-i18n="nav.dashboard">数据面板</span>
         </button>
+        <button class="nav-btn" data-view="manage" onclick="showView('manage')" id="nav-manage">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3Z"/></svg>
+          <span data-i18n="nav.manage">数据管理</span>
+        </button>
       </nav>
       <div class="header-controls" id="header-controls">
+        <button class="icon-toggle" id="auth-toggle" onclick="showView('manage')" title="数据管理登录" aria-label="数据管理登录" data-i18n-title="auth.login.title" data-i18n-aria="auth.login.title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </button>
         <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="切换主题">
           <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -174,6 +181,17 @@
         </div>
       </div>
 
+      <div class="upload-target glass-card" id="upload-target" hidden>
+        <div class="field">
+          <label for="upload-collection" data-i18n="upload.target">保存到合集</label>
+          <div class="target-row">
+            <select id="upload-collection"><option value="">未分组</option></select>
+            <button class="btn-secondary" id="btn-upload-new-collection" type="button" data-i18n="collection.new">新建合集</button>
+          </div>
+        </div>
+        <p id="upload-target-note" class="target-note" data-i18n="upload.target.authenticated">上传后元数据会进入所选合集。</p>
+      </div>
+
       <!-- Feature Cards -->
       <div class="features-grid">
         <div class="feature-card glass-card">
@@ -204,6 +222,16 @@
   <!-- Dashboard View -->
   <main id="view-dashboard" class="view">
     <section class="dashboard-section">
+      <div class="scope-switch" id="dashboard-scope-switch">
+        <button class="scope-switch__button is-active" type="button" data-scope="current" data-i18n="scope.current">本次上传</button>
+        <button class="scope-switch__button" type="button" data-scope="all" data-i18n="scope.all">全部照片</button>
+        <button class="scope-switch__button" type="button" data-scope="collection" id="scope-collection-button" disabled data-i18n="scope.collection">当前合集</button>
+      </div>
+      <div class="dashboard-collection-row" id="dashboard-collection-row" hidden>
+        <label for="dashboard-collection" data-i18n="dashboard.range">分析合集</label>
+        <select id="dashboard-collection"></select>
+      </div>
+
       <!-- Stats Row -->
       <div class="stats-row">
         <div class="stat-card glass-card" data-stat>
@@ -447,6 +475,277 @@
       </div>
     </section>
   </main>
+
+  <!-- Data Management View -->
+  <main id="view-manage" class="view">
+    <section class="manage-section">
+      <div class="manage-auth glass-card" id="manage-auth">
+        <div class="manage-auth__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <div class="manage-auth__body">
+          <h2 id="auth-title" data-i18n="auth.login.title">登录数据管理</h2>
+          <p id="auth-description" data-i18n="auth.login.desc">历史照片和合集数据受管理密码保护。</p>
+
+          <form id="auth-form" novalidate>
+            <div class="field-group" id="confirm-password-group" hidden>
+              <label for="auth-confirm-password" data-i18n="auth.confirm_password">确认新密码</label>
+              <input id="auth-confirm-password" type="password" autocomplete="new-password" required>
+            </div>
+            <div class="field-group">
+              <label for="auth-password" id="auth-password-label" data-i18n="auth.password">密码</label>
+              <input id="auth-password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn-primary auth-submit" id="auth-submit" type="submit" data-i18n="auth.login">登录</button>
+          </form>
+          <p class="auth-error" id="auth-error" role="alert" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="manage-app" id="manage-app" hidden>
+        <aside class="manage-sidebar glass-card">
+          <div class="manage-sidebar__head">
+            <div>
+              <h2 data-i18n="manage.title">数据管理</h2>
+              <span id="manage-summary" class="manage-summary">0</span>
+            </div>
+            <button class="icon-button" id="btn-change-password" type="button" title="修改密码" aria-label="修改密码" data-i18n-title="manage.change_password" data-i18n-aria="manage.change_password">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7a4 4 0 1 1 4 4"/><path d="m9 15 6-6"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
+            </button>
+          </div>
+          <button class="btn-primary manage-sidebar__create" id="btn-new-collection" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            <span data-i18n="collection.new">新建合集</span>
+          </button>
+          <div class="collection-list" id="collection-list" role="list" aria-label="分析合集"></div>
+          <div class="batch-card">
+            <label for="batch-select" data-i18n="collection.batch">保存上传批次</label>
+            <select id="batch-select"></select>
+            <button class="btn-secondary" id="btn-save-batch" type="button" data-i18n="collection.batch.action">从批次创建</button>
+            <p class="batch-card__empty" id="batch-empty" hidden data-i18n="collection.batch.empty">暂无上传批次。</p>
+          </div>
+          <div class="manage-sidebar__foot">
+            <button class="btn-secondary btn-logout" id="btn-logout" type="button" data-i18n="auth.logout">退出登录</button>
+          </div>
+        </aside>
+
+        <div class="manage-content">
+          <div class="manage-toolbar glass-card">
+            <div class="field field--search">
+              <label for="manage-search" data-i18n="manage.search">搜索</label>
+              <input id="manage-search" type="search" data-i18n-placeholder="manage.search.placeholder" placeholder="文件名、相机、镜头...">
+            </div>
+            <div class="field">
+              <label for="filter-camera" data-i18n="manage.camera">相机</label>
+              <select id="filter-camera"><option value="">全部</option></select>
+            </div>
+            <div class="field">
+              <label for="filter-lens" data-i18n="manage.lens">镜头</label>
+              <select id="filter-lens"><option value="">全部</option></select>
+            </div>
+            <div class="field">
+              <label for="filter-format" data-i18n="manage.format">格式</label>
+              <select id="filter-format"><option value="">全部</option></select>
+            </div>
+            <div class="field">
+              <label for="filter-date-from" data-i18n="manage.date_from">开始日期</label>
+              <input id="filter-date-from" type="date">
+            </div>
+            <div class="field">
+              <label for="filter-date-to" data-i18n="manage.date_to">结束日期</label>
+              <input id="filter-date-to" type="date">
+            </div>
+            <div class="field">
+              <label for="filter-sort" data-i18n="manage.sort">排序</label>
+              <select id="filter-sort">
+                <option value="captured_at" data-i18n="manage.sort.date">拍摄时间</option>
+                <option value="filename" data-i18n="manage.sort.filename">文件名</option>
+                <option value="camera" data-i18n="manage.sort.camera">相机</option>
+                <option value="iso" data-i18n="manage.sort.iso">ISO</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filter-order" data-i18n="manage.order">顺序</label>
+              <select id="filter-order">
+                <option value="desc" data-i18n="manage.order.desc">降序</option>
+                <option value="asc" data-i18n="manage.order.asc">升序</option>
+              </select>
+            </div>
+            <button class="btn-secondary" id="btn-reset-filters" type="button" data-i18n="manage.reset">重置</button>
+          </div>
+
+          <div class="bulk-bar glass-card" id="bulk-bar" hidden>
+            <span id="bulk-count" class="bulk-count">0</span>
+            <div class="bulk-actions">
+              <div class="field">
+                <label for="bulk-add-collection" data-i18n="manage.add_to">加入合集</label>
+                <select id="bulk-add-collection"><option value="">选择合集</option></select>
+              </div>
+              <div class="field">
+                <label for="bulk-remove-collection" data-i18n="manage.remove_from">移出合集</label>
+                <select id="bulk-remove-collection"><option value="">选择合集</option></select>
+              </div>
+              <button class="btn-secondary" id="btn-bulk-apply" type="button" data-i18n="manage.apply">应用</button>
+              <button class="btn-danger" id="btn-bulk-delete" type="button" data-i18n="manage.delete_selected">删除所选</button>
+              <button class="btn-secondary" id="btn-bulk-restore" type="button" data-i18n="manage.restore_selected">恢复所选</button>
+              <button class="btn-danger btn-danger--strong" id="btn-purge" type="button" data-i18n="manage.purge">清空回收站</button>
+            </div>
+          </div>
+
+          <div class="table-card glass-card manage-table-card">
+            <div class="chart-card__head">
+              <div class="chart-card__title-group">
+                <h3 id="manage-current-title" data-i18n="collection.all_photos">全部照片</h3>
+                <span class="chart-card__tag" id="manage-photo-count">0</span>
+              </div>
+              <div class="pagination" id="manage-pagination">
+                <button class="icon-button" id="btn-prev-page" type="button" title="上一页" aria-label="上一页" data-i18n-title="manage.prev_page" data-i18n-aria="manage.prev_page">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <span id="page-label" class="page-label">1 / 1</span>
+                <button class="icon-button" id="btn-next-page" type="button" title="下一页" aria-label="下一页" data-i18n-title="manage.next_page" data-i18n-aria="manage.next_page">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="manage-table">
+                <thead>
+                  <tr>
+                    <th class="column-check"><input id="select-all" type="checkbox" aria-label="全选" data-i18n-aria="manage.select_all"></th>
+                    <th data-i18n="table.th.filename">文件名</th>
+                    <th data-i18n="table.th.date">日期</th>
+                    <th data-i18n="table.th.camera">相机</th>
+                    <th data-i18n="table.th.lens">镜头</th>
+                    <th data-i18n="table.th.equiv">等效焦距</th>
+                    <th data-i18n="table.th.aperture">光圈</th>
+                    <th data-i18n="table.th.iso">ISO</th>
+                    <th data-i18n="manage.th.format">格式</th>
+                    <th data-i18n="manage.th.collections">合集</th>
+                    <th class="column-actions" data-i18n="manage.th.actions">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="manage-table-body"></tbody>
+              </table>
+              <div class="empty-state" id="manage-empty" hidden>
+                <div class="empty-state__icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H10l-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/></svg>
+                </div>
+                <h4 data-i18n="manage.empty.title">暂无照片数据</h4>
+                <p data-i18n="manage.empty.desc">上传照片后，EXIF 数据会自动累积到这里。</p>
+                <button class="btn-primary" type="button" onclick="showView('upload')" data-i18n="manage.empty.action">去上传照片</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="photo-drawer" id="photo-drawer" aria-hidden="true">
+    <div class="photo-drawer__backdrop" id="drawer-backdrop"></div>
+    <div class="photo-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+      <div class="photo-drawer__head">
+        <div>
+          <h3 id="drawer-title" data-i18n="photo.edit">编辑照片数据</h3>
+          <span id="drawer-filename" class="drawer-subtitle"></span>
+        </div>
+        <button class="icon-button" id="btn-close-drawer" type="button" title="关闭" aria-label="关闭" data-i18n-title="action.close" data-i18n-aria="action.close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="photo-form" class="photo-form" novalidate>
+        <div class="form-section">
+          <h4 data-i18n="photo.file_info">文件信息</h4>
+          <div class="form-grid">
+            <div class="field-group"><label for="edit-filename" data-i18n="table.th.filename">文件名</label><input id="edit-filename" type="text"></div>
+            <div class="field-group"><label for="edit-format" data-i18n="manage.th.format">格式</label><input id="edit-format" type="text"></div>
+            <div class="field-group"><label for="edit-file-size" data-i18n="photo.file_size">文件大小</label><input id="edit-file-size" type="text" readonly></div>
+            <div class="field-group"><label for="edit-hash" data-i18n="photo.content_hash">内容哈希</label><input id="edit-hash" type="text" readonly></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h4 data-i18n="photo.capture_info">拍摄信息</h4>
+          <div class="form-grid">
+            <div class="field-group"><label for="edit-captured-at" data-i18n="photo.captured_at">拍摄时间</label><input id="edit-captured-at" type="datetime-local"></div>
+            <div class="field-group"><label for="edit-camera" data-i18n="table.th.camera">相机</label><input id="edit-camera" type="text"></div>
+            <div class="field-group"><label for="edit-lens" data-i18n="table.th.lens">镜头</label><input id="edit-lens" type="text"></div>
+            <div class="field-group"><label for="edit-group" data-i18n="table.th.group">分组</label><input id="edit-group" type="text" readonly></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h4 data-i18n="photo.parameters">拍摄参数</h4>
+          <div class="form-grid form-grid--four">
+            <div class="field-group"><label for="edit-focal" data-i18n="table.th.focal">焦距 (mm)</label><input id="edit-focal" type="number" step="any"></div>
+            <div class="field-group"><label for="edit-focal-35" data-i18n="table.th.equiv">等效焦距</label><input id="edit-focal-35" type="number" step="any"></div>
+            <div class="field-group"><label for="edit-aperture" data-i18n="table.th.aperture">光圈</label><input id="edit-aperture" type="number" step="any"></div>
+            <div class="field-group"><label for="edit-iso" data-i18n="table.th.iso">ISO</label><input id="edit-iso" type="number" step="1"></div>
+            <div class="field-group"><label for="edit-shutter" data-i18n="table.th.shutter">快门</label><input id="edit-shutter" type="number" step="any"></div>
+            <div class="field-group"><label for="edit-equiv" data-i18n="photo.calculated_equiv">计算等效焦距</label><input id="edit-equiv" type="text" readonly></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h4 data-i18n="manage.collections">合集归属</h4>
+          <div id="drawer-collections" class="drawer-collections"></div>
+          <div class="drawer-add-collection">
+            <label for="drawer-add-collection" data-i18n="photo.add_collection">加入合集</label>
+            <div class="drawer-add-row">
+              <select id="drawer-add-collection"></select>
+              <button class="btn-secondary" id="btn-add-drawer-collection" type="button" data-i18n="manage.apply">应用</button>
+            </div>
+          </div>
+        </div>
+        <div class="photo-form__actions">
+          <button class="btn-danger" id="btn-delete-photo" type="button" data-i18n="manage.delete_photo">删除照片</button>
+          <button class="btn-primary" id="btn-save-photo" type="submit" data-i18n="manage.save">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </aside>
+
+  <dialog class="app-dialog" id="collection-dialog">
+    <form method="dialog" class="dialog-form" id="collection-form">
+      <h3 id="collection-dialog-title" data-i18n="collection.new">新建合集</h3>
+      <div class="field-group"><label for="collection-name" data-i18n="collection.name">名称</label><input id="collection-name" type="text" required></div>
+      <div class="field-group"><label for="collection-description" data-i18n="collection.description">描述</label><textarea id="collection-description" rows="3"></textarea></div>
+      <div class="field-group"><label for="collection-color" data-i18n="collection.color">颜色标识</label><input id="collection-color" type="color" value="#38BDF8"></div>
+      <input type="hidden" id="editing-collection-id" value="">
+      <div class="dialog-actions">
+        <button class="btn-secondary" type="button" id="btn-cancel-collection" data-i18n="action.cancel">取消</button>
+        <button class="btn-primary" type="submit" data-i18n="manage.save">保存修改</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="password-dialog">
+    <form method="dialog" class="dialog-form" id="password-form">
+      <h3 data-i18n="manage.change_password">修改管理密码</h3>
+      <div class="field-group"><label for="current-password" data-i18n="auth.current_password">当前密码</label><input id="current-password" type="password" autocomplete="current-password" required></div>
+      <div class="field-group"><label for="new-password" data-i18n="auth.new_password">新密码</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="field-group"><label for="confirm-new-password" data-i18n="auth.confirm_new_password">确认新密码</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="dialog-actions">
+        <button class="btn-secondary" type="button" id="btn-cancel-password" data-i18n="action.cancel">取消</button>
+        <button class="btn-primary" type="submit" data-i18n="manage.save">保存修改</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="confirm-dialog">
+    <form method="dialog" class="dialog-form">
+      <h3 id="confirm-title">确认操作</h3>
+      <p id="confirm-message"></p>
+      <div class="field-group" id="confirm-text-group" hidden>
+        <label for="confirm-text" data-i18n="manage.type_delete">输入 DELETE 确认</label>
+        <input id="confirm-text" type="text" autocomplete="off">
+      </div>
+      <div class="dialog-actions">
+        <button class="btn-secondary" type="button" id="btn-cancel-confirm" data-i18n="action.cancel">取消</button>
+        <button class="btn-primary" type="submit" id="btn-confirm-action" data-i18n="action.confirm">确认</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="app-toast" id="app-toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
 </body>
