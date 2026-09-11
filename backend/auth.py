@@ -62,11 +62,6 @@ class AuthManager:
             return False
 
     def setup_password(self, password: str) -> None:
-        if len(password) < 8:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password must be at least 8 characters.",
-            )
         now = utc_now()
         with db_connection() as conn:
             row = conn.execute("SELECT 1 FROM auth_config WHERE id = 1").fetchone()
@@ -170,11 +165,6 @@ class AuthManager:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password is incorrect.",
             )
-        if len(new_password) < 8:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="New password must be at least 8 characters.",
-            )
         now = utc_now()
         with db_connection() as conn:
             conn.execute(
@@ -190,3 +180,20 @@ class AuthManager:
             samesite="strict",
             path="/",
         )
+
+    def reset_password(self, new_password: str, response: Response) -> None:
+        """Reset the password and permanently clear all stored history."""
+        now = utc_now()
+        with db_connection() as conn:
+            conn.execute("DELETE FROM collection_photos")
+            conn.execute("DELETE FROM photos")
+            conn.execute("DELETE FROM collections")
+            conn.execute("DELETE FROM batches")
+            conn.execute("DELETE FROM sessions")
+            conn.execute("DELETE FROM auth_config")
+            conn.execute("""
+                INSERT INTO auth_config (id, password_hash, created_at, updated_at)
+                VALUES (1, ?, ?, ?)
+            """, (self.hash_password(new_password), now, now))
+        self._attempts.clear()
+        self._create_session(response)

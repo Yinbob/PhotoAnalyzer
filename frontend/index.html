@@ -10,7 +10,13 @@
 <script src="vendor/echarts.min.js"></script>
 <script src="vendor/gsap.min.js"></script>
 <script src="vendor/ScrollTrigger.min.js"></script>
-<link rel="stylesheet" href="styles.css">
+<style>
+  [hidden] { display: none !important; }
+  #view-manage.is-auth-locked > .manage-section > .manage-app {
+    display: none !important;
+  }
+</style>
+<link rel="stylesheet" href="styles.css?v=20260911-17">
 </head>
 <body>
   <!-- Ambient mesh background -->
@@ -278,6 +284,74 @@
         </div>
       </div>
 
+      <!-- Lens-specific Focal Analysis -->
+      <section class="lens-analysis glass-card" id="lens-analysis">
+        <div class="lens-analysis__header">
+          <div class="lens-analysis__copy">
+            <div class="lens-analysis__title-group">
+              <h2 class="lens-analysis__title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+                <span data-i18n="lensAnalysis.title">按镜头分析焦段</span>
+              </h2>
+              <span class="lens-analysis__badge" id="lens-analysis-count" data-i18n="lensAnalysis.badge">镜头分组</span>
+            </div>
+            <p data-i18n="lensAnalysis.desc">选择一支镜头，查看它最常用的焦距、拍摄张数与焦段集中度。</p>
+          </div>
+          <label class="lens-analysis__control" for="dashboard-lens-filter">
+            <span data-i18n="lensAnalysis.select">选择镜头</span>
+            <select id="dashboard-lens-filter" disabled>
+              <option value="" data-i18n="lensAnalysis.all">选择镜头</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="lens-analysis__empty" id="lens-analysis-empty">
+          <div class="lens-analysis__empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </div>
+          <h3 id="lens-analysis-empty-title" data-i18n="lensAnalysis.empty.title">选择一支镜头开始分析</h3>
+          <p id="lens-analysis-empty-desc" data-i18n="lensAnalysis.empty.desc">选中后，这里会显示这支镜头最常使用的焦距。</p>
+        </div>
+
+        <div class="lens-analysis__content" id="lens-analysis-content" hidden>
+          <div class="lens-analysis__metrics">
+            <div class="lens-analysis__metric">
+              <span data-i18n="lensAnalysis.top">最常用焦段</span>
+              <strong id="lens-metric-top">-</strong>
+            </div>
+            <div class="lens-analysis__metric">
+              <span data-i18n="lensAnalysis.avg">平均焦距</span>
+              <strong id="lens-metric-avg">-</strong>
+            </div>
+            <div class="lens-analysis__metric">
+              <span data-i18n="lensAnalysis.concentration">前三焦段占比</span>
+              <strong id="lens-metric-concentration">-</strong>
+            </div>
+            <div class="lens-analysis__metric">
+              <span data-i18n="lensAnalysis.range">使用范围</span>
+              <strong id="lens-metric-range">-</strong>
+            </div>
+          </div>
+
+          <div class="lens-analysis__body">
+            <div class="lens-analysis__panel">
+              <div class="lens-analysis__panel-head">
+                <h3 data-i18n="lensAnalysis.chart">焦距频次分布</h3>
+                <span id="lens-analysis-photo-count"></span>
+              </div>
+              <div class="lens-analysis__chart" id="lens-focal-chart"></div>
+            </div>
+            <div class="lens-analysis__panel">
+              <div class="lens-analysis__panel-head">
+                <h3 data-i18n="lensAnalysis.ranking">焦段明细</h3>
+                <span data-i18n="lensAnalysis.note">优先实际焦距，缺失时使用等效焦距</span>
+              </div>
+              <div class="lens-analysis__ranking" id="lens-focal-ranking" role="region" tabindex="0" data-i18n-aria="lensAnalysis.ranking"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Focal Length HERO Section -->
       <div class="focal-hero">
         <div class="focal-hero__header">
@@ -322,14 +396,14 @@
 
       <!-- Charts Grid -->
       <div class="charts-grid">
-        <div class="chart-card glass-card" data-chart>
+        <div class="chart-card chart-card--aperture glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.aperture">光圈使用</h3>
-              <span class="chart-card__tag" data-i18n="chart.aperture.tag">按 f 档</span>
+              <span class="chart-card__tag" data-i18n="chart.aperture.tag">按光圈范围</span>
             </div>
           </div>
-          <div class="chart-card__body">
+          <div class="chart-card__body chart-card__body--aperture">
             <div class="chart" id="chart-aperture"></div>
           </div>
         </div>
@@ -394,19 +468,19 @@
           </div>
         </div>
 
-        <div class="chart-card glass-card" data-chart>
+        <div class="chart-card chart-card--shutter glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
-              <h3 data-i18n="chart.dow">星期分布</h3>
-              <span class="chart-card__tag" data-i18n="chart.dow.tag">按周</span>
+              <h3 data-i18n="chart.shutter">快门速度</h3>
+              <span class="chart-card__tag" data-i18n="chart.shutter.tag">曝光区间</span>
             </div>
           </div>
           <div class="chart-card__body">
-            <div class="chart" id="chart-dow"></div>
+            <div class="chart chart--shutter" id="chart-shutter"></div>
           </div>
         </div>
 
-        <div class="chart-card glass-card" data-chart>
+        <div class="chart-card chart-card--format glass-card" data-chart>
           <div class="chart-card__head">
             <div class="chart-card__title-group">
               <h3 data-i18n="chart.format">文件格式</h3>
@@ -477,7 +551,7 @@
   </main>
 
   <!-- Data Management View -->
-  <main id="view-manage" class="view">
+  <main id="view-manage" class="view is-auth-locked">
     <section class="manage-section">
       <div class="manage-auth glass-card" id="manage-auth">
         <div class="manage-auth__icon">
@@ -486,6 +560,14 @@
         <div class="manage-auth__body">
           <h2 id="auth-title" data-i18n="auth.login.title">登录数据管理</h2>
           <p id="auth-description" data-i18n="auth.login.desc">历史照片和合集数据受管理密码保护。</p>
+
+          <div class="auth-warning" id="auth-setup-warning" hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 2.9 1.8 17a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 2.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <div>
+              <strong data-i18n="auth.setup.warning.title">请妥善保存密码</strong>
+              <p data-i18n="auth.setup.warning.desc">密码无法找回。若需要重置密码，必须先永久清空全部照片记录、合集和上传批次。</p>
+            </div>
+          </div>
 
           <form id="auth-form" novalidate>
             <div class="field-group" id="confirm-password-group" hidden>
@@ -498,11 +580,14 @@
             </div>
             <button class="btn-primary auth-submit" id="auth-submit" type="submit" data-i18n="auth.login">登录</button>
           </form>
+          <button class="auth-reset-link" id="btn-reset-password" type="button" hidden>
+            <span data-i18n="auth.reset.link">忘记密码？重置密码并清空数据</span>
+          </button>
           <p class="auth-error" id="auth-error" role="alert" aria-live="polite"></p>
         </div>
       </div>
 
-      <div class="manage-app" id="manage-app" hidden>
+      <div class="manage-app" id="manage-app" hidden aria-hidden="true">
         <aside class="manage-sidebar glass-card">
           <div class="manage-sidebar__head">
             <div>
@@ -721,11 +806,32 @@
     <form method="dialog" class="dialog-form" id="password-form">
       <h3 data-i18n="manage.change_password">修改管理密码</h3>
       <div class="field-group"><label for="current-password" data-i18n="auth.current_password">当前密码</label><input id="current-password" type="password" autocomplete="current-password" required></div>
-      <div class="field-group"><label for="new-password" data-i18n="auth.new_password">新密码</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required></div>
-      <div class="field-group"><label for="confirm-new-password" data-i18n="auth.confirm_new_password">确认新密码</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="field-group"><label for="new-password" data-i18n="auth.new_password">新密码</label><input id="new-password" type="password" autocomplete="new-password" required></div>
+      <div class="field-group"><label for="confirm-new-password" data-i18n="auth.confirm_new_password">确认新密码</label><input id="confirm-new-password" type="password" autocomplete="new-password" required></div>
       <div class="dialog-actions">
         <button class="btn-secondary" type="button" id="btn-cancel-password" data-i18n="action.cancel">取消</button>
         <button class="btn-primary" type="submit" data-i18n="manage.save">保存修改</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog app-dialog--danger" id="reset-password-dialog">
+    <form method="dialog" class="dialog-form" id="reset-password-form" novalidate>
+      <h3 data-i18n="auth.reset.title">重置密码</h3>
+      <div class="reset-warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 2.9 1.8 17a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 2.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <p data-i18n="auth.reset.warning">重置密码会永久清除全部照片记录、合集和上传批次。此操作无法撤销。</p>
+      </div>
+      <div class="field-group"><label for="reset-new-password" data-i18n="auth.new_password">新密码</label><input id="reset-new-password" type="password" autocomplete="new-password" required></div>
+      <div class="field-group"><label for="reset-confirm-password" data-i18n="auth.confirm_new_password">确认新密码</label><input id="reset-confirm-password" type="password" autocomplete="new-password" required></div>
+      <label class="reset-acknowledge">
+        <input id="reset-password-ack" type="checkbox">
+        <span data-i18n="auth.reset.ack">我已了解并同意永久清空全部已保存数据。</span>
+      </label>
+      <p class="auth-error" id="reset-password-error" role="alert" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button class="btn-secondary" type="button" id="btn-cancel-reset-password" data-i18n="action.cancel">取消</button>
+        <button class="btn-danger btn-danger--strong" type="submit" id="btn-confirm-reset-password" disabled data-i18n="auth.reset.action">重置并清空数据</button>
       </div>
     </form>
   </dialog>
@@ -734,10 +840,6 @@
     <form method="dialog" class="dialog-form">
       <h3 id="confirm-title">确认操作</h3>
       <p id="confirm-message"></p>
-      <div class="field-group" id="confirm-text-group" hidden>
-        <label for="confirm-text" data-i18n="manage.type_delete">输入 DELETE 确认</label>
-        <input id="confirm-text" type="text" autocomplete="off">
-      </div>
       <div class="dialog-actions">
         <button class="btn-secondary" type="button" id="btn-cancel-confirm" data-i18n="action.cancel">取消</button>
         <button class="btn-primary" type="submit" id="btn-confirm-action" data-i18n="action.confirm">确认</button>
@@ -747,6 +849,6 @@
 
   <div class="app-toast" id="app-toast" role="status" aria-live="polite"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=20260911-17"></script>
 </body>
 </html>

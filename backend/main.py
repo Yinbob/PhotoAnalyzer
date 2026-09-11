@@ -5,6 +5,7 @@ Serves the frontend and provides EXIF analysis API.
 import os
 import hashlib
 import json
+import math
 import tempfile
 from pathlib import Path
 from datetime import datetime
@@ -24,6 +25,19 @@ import backend.database as db
 
 app = FastAPI(title="PhotoLens Analyzer")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.middleware("http")
+async def disable_frontend_cache(request: Request, call_next):
+    """Ensure browsers pick up frontend changes without relying on a hard refresh."""
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.endswith((".html", ".css", ".js")):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -45,6 +59,10 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 
+class ResetPasswordRequest(BaseModel):
+    new_password: str
+
+
 class CollectionRequest(BaseModel):
     name: str
     description: Optional[str] = None
@@ -62,7 +80,7 @@ class BulkPhotoRequest(BaseModel):
 
 
 class PurgeRequest(BaseModel):
-    confirm: str
+    confirm: Optional[str] = None
 
 
 class BatchCollectionRequest(BaseModel):
@@ -233,6 +251,38 @@ def compute_stats(photos: list) -> dict:
     iso_dist = Counter(isos)
     iso_dist_sorted = dict(sorted(iso_dist.items()))
 
+    # Shutter speed distribution, grouped into meaningful exposure ranges.
+    shutter_buckets = (
+        (1 / 1000, "1000_plus"),
+        (1 / 500, "500_999"),
+        (1 / 250, "250_499"),
+        (1 / 125, "125_249"),
+        (1 / 60, "60_124"),
+        (1 / 30, "30_59"),
+        (1 / 15, "15_29"),
+    )
+    shutter_dist = Counter()
+    shutter_count = 0
+    for photo in photos:
+        try:
+            exposure = float(photo.get("exposure_time"))
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(exposure) or exposure <= 0:
+            continue
+        shutter_count += 1
+        for upper_bound, bucket in shutter_buckets:
+            if exposure <= upper_bound:
+                shutter_dist[bucket] += 1
+                break
+        else:
+            shutter_dist["slower_15"] += 1
+    shutter_dist_sorted = {}
+    if shutter_count:
+        for _, bucket in shutter_buckets:
+            shutter_dist_sorted[bucket] = shutter_dist.get(bucket, 0)
+        shutter_dist_sorted["slower_15"] = shutter_dist.get("slower_15", 0)
+
     # Camera usage
     cameras = Counter(p.get("camera_model", "Unknown") for p in photos)
     cameras_sorted = dict(cameras.most_common())
@@ -294,6 +344,7 @@ def compute_stats(photos: list) -> dict:
         "focal_dist": focal_dist_sorted,
         "aperture_dist": aperture_dist_sorted,
         "iso_dist": iso_dist_sorted,
+        "shutter_dist": shutter_dist_sorted,
         "cameras": cameras_sorted,
         "lenses": lenses_sorted,
         "monthly": monthly_sorted,
@@ -301,6 +352,7 @@ def compute_stats(photos: list) -> dict:
         "dow": dow_sorted,
         "formats": dict(formats),
         "recommendations": recommendations,
+        "lens_analyses": build_lens_analyses(photos),
         "averages": {
             "focal_length": avg_focal,
             "aperture": avg_aperture,
@@ -309,6 +361,65 @@ def compute_stats(photos: list) -> dict:
         },
         "focal_groups_definition": engine.focal_groups,
     }
+
+
+def build_lens_analyses(photos: list) -> dict:
+    """Summarize focal-length habits for each named lens."""
+    grouped = {}
+    for photo in photos:
+        lens = str(photo.get("lens_model") or "").strip()
+        if not lens or lens.lower() == "unknown":
+            continue
+
+        focal = photo.get("focal_length")
+        if focal is None:
+            focal = photo.get("equiv_focal")
+        try:
+            focal = round(float(focal), 1)
+        except (TypeError, ValueError):
+            continue
+
+        analysis = grouped.setdefault(lens, {"total": 0, "focals": Counter()})
+        analysis["total"] += 1
+        analysis["focals"][focal] += 1
+
+    results = {}
+    for lens, analysis in grouped.items():
+        focal_counter = analysis["focals"]
+        focal_count = sum(focal_counter.values())
+        if focal_count == 0:
+            continue
+
+        top_focals = sorted(
+            focal_counter.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+        top_three_count = sum(count for _, count in top_focals[:3])
+        results[lens] = {
+            "total": analysis["total"],
+            "focal_count": focal_count,
+            "avg_focal": round(
+                sum(focal * count for focal, count in focal_counter.items()) / focal_count,
+                1,
+            ),
+            "top_focals": [
+                {
+                    "focal": focal,
+                    "count": count,
+                    "percentage": round(count / focal_count * 100, 1),
+                }
+                for focal, count in top_focals[:8]
+            ],
+            "top_three_percentage": round(top_three_count / focal_count * 100, 1),
+            "focal_min": min(focal_counter),
+            "focal_max": max(focal_counter),
+            "focal_dist": dict(sorted(focal_counter.items())),
+        }
+
+    return dict(sorted(
+        results.items(),
+        key=lambda item: (-item[1]["total"], item[0].lower()),
+    ))
 
 
 def generate_recommendations(focal_dist, focal_groups, total) -> list:
@@ -438,6 +549,12 @@ async def setup_password(payload: PasswordRequest, response: Response):
 async def login(payload: PasswordRequest, response: Response):
     auth.login(payload.password, response)
     return {"authenticated": True}
+
+
+@app.post("/api/auth/reset")
+async def reset_password(payload: ResetPasswordRequest, response: Response):
+    auth.reset_password(payload.new_password, response)
+    return {"configured": True, "authenticated": True, "data_reset": True}
 
 
 @app.post("/api/auth/logout")
@@ -713,8 +830,6 @@ async def purge_photos(
     payload: PurgeRequest,
     _session: Any = Depends(require_authenticated),
 ):
-    if payload.confirm != "DELETE":
-        raise HTTPException(status_code=400, detail="Type DELETE to confirm.")
     return {"purged": db.purge_deleted()}
 
 
@@ -751,6 +866,3 @@ async def batch_to_collection(
 
 # Serve frontend static files
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")
-
-
-

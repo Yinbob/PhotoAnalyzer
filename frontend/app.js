@@ -41,7 +41,9 @@ const I18N = {
     'chart.focalBar': 'Focal Length Distribution',
     'chart.focalBar.tag': 'by mm',
     'chart.aperture': 'Aperture Usage',
-    'chart.aperture.tag': 'by f-stop',
+    'chart.aperture.tag': 'by f-stop range',
+    'chart.aperture.note': 'One tick = {unit} photos · cap = exact count',
+    'chart.aperture.empty': 'No aperture values to display.',
     'chart.iso': 'ISO Distribution',
     'chart.iso.tag': 'sensitivity',
     'chart.camera': 'Camera Usage',
@@ -52,10 +54,20 @@ const I18N = {
     'chart.timeline.tag': 'monthly',
     'chart.hourly': 'Shooting by Hour',
     'chart.hourly.tag': 'time of day',
-    'chart.dow': 'Day of Week',
-    'chart.dow.tag': 'weekly',
     'chart.format': 'File Format',
     'chart.format.tag': 'by type',
+    'chart.shutter': 'Shutter Speed',
+    'chart.shutter.tag': 'exposure bins',
+    'chart.shutter.empty': 'No shutter speed values to display.',
+    'chart.shutter.slower_axis': 'Slower',
+    'chart.shutter.bin_1000_plus': '1/1000s or faster',
+    'chart.shutter.bin_500_999': '1/500–1/999s',
+    'chart.shutter.bin_250_499': '1/250–1/499s',
+    'chart.shutter.bin_125_249': '1/125–1/249s',
+    'chart.shutter.bin_60_124': '1/60–1/124s',
+    'chart.shutter.bin_30_59': '1/30–1/59s',
+    'chart.shutter.bin_15_29': '1/15–1/29s',
+    'chart.shutter.bin_slower_15': '1/15s or slower',
     'recs.title': 'Lens Upgrade Recommendations',
     'recs.ai': 'AI insights',
     'table.title': 'Photo Details',
@@ -82,7 +94,7 @@ const I18N = {
     'auth.login.title': 'Sign in to Data Management',
     'auth.login.desc': 'Historical photos and collections are protected by the management password.',
     'auth.setup.title': 'Set Management Password',
-    'auth.setup.desc': 'Choose a password of at least 8 characters. It protects stored history, not normal analysis.',
+    'auth.setup.desc': 'Choose a password to protect stored history. It does not block normal analysis.',
     'auth.password': 'Password',
     'auth.confirm_password': 'Confirm New Password',
     'auth.current_password': 'Current Password',
@@ -93,8 +105,18 @@ const I18N = {
     'auth.logout': 'Sign Out',
     'auth.change_saved': 'Password updated.',
     'auth.error.confirm': 'Passwords do not match.',
-    'auth.error.minimum': 'Use at least 8 characters.',
     'auth.error.invalid': 'Incorrect management password.',
+    'auth.setup.warning.title': 'Keep this password safe',
+    'auth.setup.warning.desc': 'This password cannot be recovered. Resetting it permanently clears all photo records, collections, and upload batches.',
+    'auth.reset.link': 'Forgot password? Reset password and clear data',
+    'auth.reset.title': 'Reset Password',
+    'auth.reset.warning': 'Resetting the password permanently deletes every photo record, collection, and upload batch. This cannot be undone.',
+    'auth.reset.ack': 'I understand and agree to permanently clear all saved data.',
+    'auth.reset.ack_required': 'Confirm that you understand the saved data will be permanently cleared.',
+    'auth.reset.action': 'Reset and Clear Data',
+    'auth.reset.in_progress': 'Resetting...',
+    'auth.reset.success': 'Password reset. All saved data was cleared.',
+    'auth.reset.error': 'Password reset failed. Please try again.',
     'upload.target': 'Save to Collection',
     'upload.target.authenticated': 'Uploaded metadata will enter the selected collection.',
     'upload.target.ungrouped': 'Uploaded metadata will enter Ungrouped.',
@@ -105,6 +127,7 @@ const I18N = {
     'collection.recycle_bin': 'Recycle Bin',
     'collection.new': 'New Collection',
     'collection.edit': 'Edit Collection',
+    'collection.delete': 'Delete Collection',
     'collection.name': 'Name',
     'collection.description': 'Description',
     'collection.color': 'Color Tag',
@@ -115,6 +138,7 @@ const I18N = {
     'manage.title': 'Data Management',
     'manage.change_password': 'Change Password',
     'manage.summary': '{photos} photos · {collections} collections',
+    'manage.collections': 'Collections',
     'manage.search': 'Search',
     'manage.search.placeholder': 'Filename, camera, lens...',
     'manage.camera': 'Camera',
@@ -149,7 +173,6 @@ const I18N = {
     'manage.delete_photo': 'Delete Photo',
     'manage.restore_photo': 'Restore',
     'manage.save': 'Save Changes',
-    'manage.type_delete': 'Type DELETE to confirm',
     'manage.confirm_delete_photo': 'Move this photo to the recycle bin?',
     'manage.confirm_bulk_delete': 'Move the selected photos to the recycle bin?',
     'manage.confirm_bulk_restore': 'Restore the selected photos?',
@@ -201,6 +224,27 @@ const I18N = {
     'upload.exif_fail': 'Unable to extract EXIF data:',
     'upload.db_error': 'Metadata could not be saved. Please check the server.',
     'collection.batch.created': 'Batch collection created.',
+    'lensAnalysis.title': 'Focal Length by Lens',
+    'lensAnalysis.badge': 'lens groups',
+    'lensAnalysis.desc': 'Choose a lens to see its most-used focal lengths, photo count, and concentration.',
+    'lensAnalysis.select': 'Choose Lens',
+    'lensAnalysis.all': 'Choose a lens',
+    'lensAnalysis.chart': 'Focal frequency distribution',
+    'lensAnalysis.chart.conclusion': 'Peak at {focal}mm · {percentage}% of shots',
+    'lensAnalysis.axis.share': 'SHARE',
+    'lensAnalysis.axis.wide': 'WIDE',
+    'lensAnalysis.axis.tele': 'TELE',
+    'lensAnalysis.ranking': 'Focal length details',
+    'lensAnalysis.top': 'Most used',
+    'lensAnalysis.avg': 'Average focal',
+    'lensAnalysis.concentration': 'Top 3 share',
+    'lensAnalysis.range': 'Range used',
+    'lensAnalysis.note': 'Actual focal length first, 35mm equivalent as fallback.',
+    'lensAnalysis.photos': '{count} photos',
+    'lensAnalysis.empty.title': 'Choose a lens to begin',
+    'lensAnalysis.empty.desc': 'The lens-specific focal-length pattern will appear here.',
+    'lensAnalysis.none.title': 'No lens data to analyze',
+    'lensAnalysis.none.desc': 'Photos need a lens model and focal length before they can be grouped here.',
     'chart.photos_unit': ' photos',
     'chart.hour_label': 'h',
   },
@@ -235,7 +279,9 @@ const I18N = {
     'chart.focalBar': '焦距分布',
     'chart.focalBar.tag': '按毫米',
     'chart.aperture': '光圈使用',
-    'chart.aperture.tag': '按 f 档',
+    'chart.aperture.tag': '按光圈范围',
+    'chart.aperture.note': '1 个刻度 = {unit} 张照片 · 竖线为准确数量',
+    'chart.aperture.empty': '没有可展示的光圈数据。',
     'chart.iso': 'ISO 分布',
     'chart.iso.tag': '感光度',
     'chart.camera': '相机使用',
@@ -246,10 +292,20 @@ const I18N = {
     'chart.timeline.tag': '按月',
     'chart.hourly': '按小时拍摄分布',
     'chart.hourly.tag': '时段',
-    'chart.dow': '星期分布',
-    'chart.dow.tag': '按周',
     'chart.format': '文件格式',
     'chart.format.tag': '按类型',
+    'chart.shutter': '快门速度',
+    'chart.shutter.tag': '曝光区间',
+    'chart.shutter.empty': '没有可展示的快门速度数据。',
+    'chart.shutter.slower_axis': '更慢',
+    'chart.shutter.bin_1000_plus': '1/1000s 及更快',
+    'chart.shutter.bin_500_999': '1/500–1/999s',
+    'chart.shutter.bin_250_499': '1/250–1/499s',
+    'chart.shutter.bin_125_249': '1/125–1/249s',
+    'chart.shutter.bin_60_124': '1/60–1/124s',
+    'chart.shutter.bin_30_59': '1/30–1/59s',
+    'chart.shutter.bin_15_29': '1/15–1/29s',
+    'chart.shutter.bin_slower_15': '1/15s 及更慢',
     'recs.title': '镜头升级建议',
     'recs.ai': 'AI 洞察',
     'table.title': '照片详情',
@@ -276,7 +332,7 @@ const I18N = {
     'auth.login.title': '登录数据管理',
     'auth.login.desc': '历史照片和合集数据受管理密码保护。',
     'auth.setup.title': '设置管理密码',
-    'auth.setup.desc': '设置至少 8 位密码，用于保护历史数据，不阻断普通分析。',
+    'auth.setup.desc': '设置一个密码用于保护历史数据，不阻断普通分析。',
     'auth.password': '密码',
     'auth.confirm_password': '确认新密码',
     'auth.current_password': '当前密码',
@@ -287,8 +343,18 @@ const I18N = {
     'auth.logout': '退出登录',
     'auth.change_saved': '密码已更新。',
     'auth.error.confirm': '两次输入的密码不一致。',
-    'auth.error.minimum': '密码至少需要 8 位。',
     'auth.error.invalid': '管理密码不正确。',
+    'auth.setup.warning.title': '请妥善保存密码',
+    'auth.setup.warning.desc': '密码无法找回。若需要重置密码，必须先永久清空全部照片记录、合集和上传批次。',
+    'auth.reset.link': '忘记密码？重置密码并清空数据',
+    'auth.reset.title': '重置密码',
+    'auth.reset.warning': '重置密码会永久清除全部照片记录、合集和上传批次。此操作无法撤销。',
+    'auth.reset.ack': '我已了解并同意永久清空全部已保存数据。',
+    'auth.reset.ack_required': '请先确认你了解已保存数据将被永久清空。',
+    'auth.reset.action': '重置并清空数据',
+    'auth.reset.in_progress': '正在重置...',
+    'auth.reset.success': '密码已重置，全部已保存数据已清空。',
+    'auth.reset.error': '密码重置失败，请重试。',
     'upload.target': '保存到合集',
     'upload.target.authenticated': '上传后元数据会进入所选合集。',
     'upload.target.ungrouped': '上传后元数据会进入未分组。',
@@ -299,6 +365,7 @@ const I18N = {
     'collection.recycle_bin': '回收站',
     'collection.new': '新建合集',
     'collection.edit': '编辑合集',
+    'collection.delete': '删除合集',
     'collection.name': '名称',
     'collection.description': '描述',
     'collection.color': '颜色标识',
@@ -309,6 +376,7 @@ const I18N = {
     'manage.title': '数据管理',
     'manage.change_password': '修改密码',
     'manage.summary': '{photos} 张照片 · {collections} 个合集',
+    'manage.collections': '合集归属',
     'manage.search': '搜索',
     'manage.search.placeholder': '文件名、相机、镜头...',
     'manage.camera': '相机',
@@ -343,7 +411,6 @@ const I18N = {
     'manage.delete_photo': '删除照片',
     'manage.restore_photo': '恢复',
     'manage.save': '保存修改',
-    'manage.type_delete': '输入 DELETE 确认',
     'manage.confirm_delete_photo': '将这张照片移入回收站？',
     'manage.confirm_bulk_delete': '将所选照片移入回收站？',
     'manage.confirm_bulk_restore': '恢复所选照片？',
@@ -395,6 +462,27 @@ const I18N = {
     'upload.exif_fail': '无法提取EXIF数据:',
     'upload.db_error': '元数据保存失败，请检查服务器。',
     'collection.batch.created': '批次合集已创建。',
+    'lensAnalysis.title': '按镜头分析焦段',
+    'lensAnalysis.badge': '镜头分组',
+    'lensAnalysis.desc': '选择一支镜头，查看它最常用的焦距、拍摄张数与焦段集中度。',
+    'lensAnalysis.select': '选择镜头',
+    'lensAnalysis.all': '选择镜头',
+    'lensAnalysis.chart': '焦距频次分布',
+    'lensAnalysis.chart.conclusion': '最集中在 {focal}mm · 占 {percentage}%',
+    'lensAnalysis.axis.share': '占比',
+    'lensAnalysis.axis.wide': '广角',
+    'lensAnalysis.axis.tele': '长焦',
+    'lensAnalysis.ranking': '焦段明细',
+    'lensAnalysis.top': '最常用焦段',
+    'lensAnalysis.avg': '平均焦距',
+    'lensAnalysis.concentration': '前三焦段占比',
+    'lensAnalysis.range': '使用范围',
+    'lensAnalysis.note': '优先使用实际焦距；缺失时以 35mm 等效焦距回退。',
+    'lensAnalysis.photos': '{count} 张照片',
+    'lensAnalysis.empty.title': '选择一支镜头开始分析',
+    'lensAnalysis.empty.desc': '选中后，这里会显示这支镜头最常使用的焦距。',
+    'lensAnalysis.none.title': '暂无可分析的镜头数据',
+    'lensAnalysis.none.desc': '照片需要同时包含镜头型号和焦距，才能进行镜头分组分析。',
     'chart.photos_unit': '张',
     'chart.hour_label': '时',
   }
@@ -410,16 +498,22 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = t(key);
-    el.textContent = val;
+    if (val !== key) el.textContent = val;
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = t(key);
+    if (val !== key) el.setAttribute('placeholder', val);
   });
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    const key = el.getAttribute('data-i18n-title');
+    const val = t(key);
+    if (val !== key) el.setAttribute('title', val);
   });
   document.querySelectorAll('[data-i18n-aria]').forEach(el => {
-    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+    const key = el.getAttribute('data-i18n-aria');
+    const val = t(key);
+    if (val !== key) el.setAttribute('aria-label', val);
   });
   document.documentElement.setAttribute('lang', currentLang);
   document.querySelectorAll('.field select').forEach(select => {
@@ -602,41 +696,311 @@ function renderFocalBar(data) {
   });
 }
 
-function renderApertureChart(data) {
-  // Horizontal chunky bars (G3 Chunky Bars flavor) - pairs cleanly against vertical ISO
-  const chart = initChart('chart-aperture');
-  if (!chart || !data) return;
-  const th = getChartTheme();
-  const entries = Object.entries(data)
-    .sort((a, b) => parseFloat(String(a[0]).replace('f/', '')) - parseFloat(String(b[0]).replace('f/', '')));
-  chart.setOption({
-    tooltip: Object.assign(tooltipOpts(), { trigger: 'axis', axisPointer: { type: 'shadow' } }),
-    grid: { left: 64, right: 54, top: 12, bottom: 14 },
-    xAxis: { type: 'value', ...axisStyle(), splitLine: { show: false } },
-    yAxis: {
-      type: 'category',
-      data: entries.map(e => e[0]),
-      axisLabel: { color: th.textColor, fontSize: 11, fontFamily: th.monoFamily },
-      axisLine: { lineStyle: { color: th.axisLineColor } },
-      axisTick: { show: false }
-    },
-    series: [{
-      type: 'bar',
-      data: entries.map(e => e[1]),
-      barWidth: 18,
-      itemStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-          { offset: 0, color: th.colors[3] },
-          { offset: 1, color: th.colors[1] }
-        ]),
-        borderRadius: [0, 9, 9, 0]
-      },
-      label: { show: true, position: 'right', color: th.labelColor, fontSize: 11, fontWeight: 600, fontFamily: th.monoFamily, formatter: '{c}' },
-      animationDelay: idx => idx * 70,
-      animationDuration: 800,
-      animationEasing: 'cubicOut'
-    }]
+let _apertureResizeObserver = null;
+let _apertureResizeData = null;
+let _apertureResizeFrame = 0;
+let _apertureResizeWidth = 0;
+
+function observeApertureChart(dom, data) {
+  _apertureResizeData = data;
+  if (typeof ResizeObserver !== 'function') return;
+  if (!_apertureResizeObserver) {
+    _apertureResizeObserver = new ResizeObserver(entries => {
+      const width = Math.round(entries[0]?.contentRect?.width || 0);
+      if (width < 120 || width === _apertureResizeWidth) return;
+      _apertureResizeWidth = width;
+      cancelAnimationFrame(_apertureResizeFrame);
+      _apertureResizeFrame = requestAnimationFrame(() => {
+        if (_apertureResizeData) renderApertureChart(_apertureResizeData);
+      });
+    });
+  }
+  _apertureResizeObserver.observe(dom);
+}
+
+function apertureTickUnit(maxCount, maxTicks) {
+  if (!Number.isFinite(maxCount) || maxCount <= 0) {
+    return { unit: 1, intervals: 5 };
+  }
+  if (maxCount <= maxTicks) {
+    return { unit: 1, intervals: Math.max(5, Math.ceil(maxCount)) };
+  }
+  const rough = maxCount / maxTicks;
+  const magnitude = 10 ** Math.floor(Math.log10(rough));
+  const candidates = [1, 2, 5, 10].map(multiplier => multiplier * magnitude);
+  const unit = candidates.find(candidate => Math.ceil(maxCount / candidate) <= maxTicks) || candidates[candidates.length - 1];
+  return { unit, intervals: Math.ceil(maxCount / unit) };
+}
+
+function formatApertureValue(value) {
+  if (!Number.isFinite(value)) return '';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function buildApertureGroups(entries) {
+  const sorted = [...entries].sort((a, b) => (
+    a.aperture - b.aperture || b.count - a.count
+  ));
+  const maxGroups = 5;
+
+  if (sorted.length <= maxGroups) {
+    return sorted.map(entry => ({
+      label: entry.label,
+      aperture: entry.aperture,
+      count: entry.count,
+      items: [entry],
+    }));
+  }
+
+  const baseSize = Math.floor(sorted.length / maxGroups);
+  const remainder = sorted.length % maxGroups;
+  let cursor = 0;
+
+  return Array.from({ length: maxGroups }, (_, groupIndex) => {
+    const size = baseSize + (groupIndex < remainder ? 1 : 0);
+    const items = sorted.slice(cursor, cursor + size);
+    cursor += size;
+    const start = items[0].aperture;
+    const end = items[items.length - 1].aperture;
+    const startLabel = formatApertureValue(start);
+    const endLabel = formatApertureValue(end);
+
+    return {
+      label: start === end ? `f/${startLabel}` : `f/${startLabel}–${endLabel}`,
+      aperture: start,
+      count: items.reduce((sum, item) => sum + item.count, 0),
+      items,
+    };
   });
+}
+
+function renderApertureChart(data) {
+  const dom = document.getElementById('chart-aperture');
+  if (!dom || !data) return;
+
+  const existing = typeof echarts !== 'undefined' ? echarts.getInstanceByDom(dom) : null;
+  if (existing) existing.dispose();
+
+  const rawEntries = Object.entries(data)
+    .map(([name, count]) => {
+      const raw = String(name);
+      const value = Number(count);
+      const aperture = Number.parseFloat(raw.replace(/^f\//i, ''));
+      return {
+        label: /^f\//i.test(raw) ? raw : `f/${raw}`,
+        aperture: Number.isFinite(aperture) ? aperture : Number.POSITIVE_INFINITY,
+        count: Number.isFinite(value) ? value : 0,
+      };
+    })
+    .filter(entry => entry.count > 0);
+
+  if (!rawEntries.length) {
+    dom.innerHTML = '';
+    const empty = document.createElement('p');
+    empty.className = 'aperture-chart__empty';
+    empty.textContent = t('chart.aperture.empty');
+    dom.appendChild(empty);
+    return;
+  }
+
+  const entries = buildApertureGroups(rawEntries);
+  const width = Math.max(260, Math.round(dom.clientWidth || 560));
+  const compact = width < 560;
+  const rowHeight = compact ? 30 : 32;
+  const top = compact ? 34 : 36;
+  const bottom = compact ? 22 : 24;
+  const height = top + entries.length * rowHeight + bottom;
+  const longestLabel = Math.max(...entries.map(entry => entry.label.length));
+  const labelWidth = Math.min(
+    width * 0.46,
+    Math.max(compact ? 88 : 102, longestLabel * (compact ? 6.1 : 6.5) + 12)
+  );
+  const countWidth = compact ? 42 : 52;
+  const trackStart = labelWidth;
+  const trackEnd = Math.max(trackStart + 96, width - countWidth - 10);
+  const trackWidth = trackEnd - trackStart;
+  const maxCount = Math.max(...entries.map(entry => entry.count));
+  const maxTicks = Math.max(16, Math.min(48, Math.floor(trackWidth / 14)));
+  const scale = apertureTickUnit(maxCount, maxTicks);
+  const maxUnits = Math.max(scale.unit, scale.intervals * scale.unit);
+  const step = trackWidth / scale.intervals;
+  const th = getChartTheme();
+  const ns = 'http://www.w3.org/2000/svg';
+  const total = entries.reduce((sum, entry) => sum + entry.count, 0);
+  const numberFormat = new Intl.NumberFormat(currentLang === 'zh' ? 'zh-CN' : 'en-US');
+  const pseudoRandom = (index, salt) => Math.abs(((index * 73856093) ^ (salt * 19349663)) % 1000) / 1000;
+
+  dom.innerHTML = '';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', t('chart.aperture'));
+  svg.setAttribute('tabindex', '0');
+  svg.classList.add('aperture-ticks');
+
+  const add = (tag, attrs = {}, content = '') => {
+    const node = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (content !== '') node.textContent = content;
+    svg.appendChild(node);
+    return node;
+  };
+
+  add('line', {
+    x1: trackStart,
+    y1: top - 17,
+    x2: trackEnd,
+    y2: top - 17,
+    stroke: th.axisLineColor,
+    'stroke-width': 1,
+    class: 'aperture-ticks__fade',
+  });
+  add('text', {
+    x: trackStart,
+    y: top - 25,
+    'text-anchor': 'middle',
+    fill: th.textColor,
+    'font-family': th.monoFamily,
+    'font-size': compact ? 9 : 10,
+    'font-weight': 700,
+    class: 'aperture-ticks__fade',
+  }, '0');
+  add('text', {
+    x: trackEnd,
+    y: top - 25,
+    'text-anchor': 'end',
+    fill: th.textColor,
+    'font-family': th.monoFamily,
+    'font-size': compact ? 9 : 10,
+    'font-weight': 700,
+    class: 'aperture-ticks__fade',
+    style: 'animation-delay:.08s',
+  }, numberFormat.format(maxUnits));
+
+  entries.forEach((entry, index) => {
+    const rowTop = top + index * rowHeight;
+    const baseline = rowTop + rowHeight - (compact ? 10 : 12);
+    const tickHeight = compact ? 9 : 11;
+    const hero = entry.count === maxCount;
+    const countX = trackStart + (entry.count / maxUnits) * trackWidth;
+    const tickColor = hero ? th.colors[1] : th.labelColor;
+    const capColor = hero ? th.colors[1] : th.colors[0];
+    const row = document.createElementNS(ns, 'g');
+    const title = document.createElementNS(ns, 'title');
+    const percentage = total ? (entry.count / total) * 100 : 0;
+    const detail = entry.items.length > 1
+      ? entry.items.map(item => `${item.label}: ${numberFormat.format(item.count)}`).join(' · ')
+      : '';
+    title.textContent = `${entry.label} · ${numberFormat.format(entry.count)}${t('chart.photos_unit')} · ${percentage.toFixed(1)}%${detail ? `\n${detail}` : ''}`;
+    row.appendChild(title);
+    svg.appendChild(row);
+
+    const addToRow = (tag, attrs = {}, content = '') => {
+      const node = document.createElementNS(ns, tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      if (content !== '') node.textContent = content;
+      row.appendChild(node);
+      return node;
+    };
+
+    addToRow('text', {
+      x: trackStart - (compact ? 9 : 11),
+      y: baseline - tickHeight / 2,
+      'text-anchor': 'end',
+      'dominant-baseline': 'middle',
+      fill: hero ? th.labelColor : th.textColor,
+      'font-family': th.monoFamily,
+      'font-size': compact ? 10.5 : 11,
+      'font-weight': hero ? 800 : 700,
+      class: 'aperture-ticks__fade',
+      style: `animation-delay:${index * 0.035}s`,
+    }, entry.label);
+
+    addToRow('line', {
+      x1: trackStart,
+      y1: baseline,
+      x2: trackEnd,
+      y2: baseline,
+      stroke: th.axisLineColor,
+      'stroke-width': 0.8,
+      class: 'aperture-ticks__fade',
+      style: `animation-delay:${index * 0.035}s`,
+    });
+
+    for (let tickIndex = 0; tickIndex < scale.intervals; tickIndex += 1) {
+      const x = trackStart + (tickIndex + 1) * step;
+      addToRow('line', {
+        x1: x,
+        y1: baseline,
+        x2: x,
+        y2: baseline - tickHeight + pseudoRandom(tickIndex + 1, index + 3) * 2.4,
+        stroke: tickColor,
+        'stroke-width': hero ? 1.2 : 0.9,
+        opacity: hero ? 0.92 : 0.46 + pseudoRandom(tickIndex + 4, index + 7) * 0.34,
+        class: 'aperture-ticks__fade',
+        style: `animation-delay:${Math.min(0.55, index * 0.035 + tickIndex * 0.006)}s`,
+      });
+      if ((tickIndex + 1) % 5 === 0) {
+        addToRow('circle', {
+          cx: x,
+          cy: baseline + 6,
+          r: 0.9,
+          fill: th.axisLineColor,
+          class: 'aperture-ticks__fade',
+        });
+      }
+    }
+
+    addToRow('line', {
+      x1: countX,
+      y1: baseline - tickHeight - 5,
+      x2: countX,
+      y2: baseline + 7,
+      stroke: capColor,
+      'stroke-width': hero ? 2.4 : 1.8,
+      'stroke-linecap': 'round',
+      class: 'aperture-ticks__cap',
+      style: `animation-delay:${0.15 + index * 0.045}s`,
+    });
+    addToRow('circle', {
+      cx: countX,
+      cy: baseline + 1,
+      r: hero ? 2.5 : 1.8,
+      fill: capColor,
+      class: 'aperture-ticks__cap',
+      style: `animation-delay:${0.16 + index * 0.045}s`,
+    });
+    addToRow('text', {
+      x: width - 5,
+      y: baseline - tickHeight / 2,
+      'text-anchor': 'end',
+      'dominant-baseline': 'middle',
+      fill: hero ? th.colors[1] : th.labelColor,
+      'font-family': th.monoFamily,
+      'font-size': compact ? 10.5 : 11.5,
+      'font-weight': 800,
+      class: 'aperture-ticks__label',
+      style: `animation-delay:${0.18 + index * 0.045}s`,
+    }, numberFormat.format(entry.count));
+  });
+
+  add('text', {
+    x: width / 2,
+    y: height - 10,
+    'text-anchor': 'middle',
+    fill: th.textColor,
+    'font-family': th.monoFamily,
+    'font-size': compact ? 9 : 9.5,
+    'font-weight': 700,
+    class: 'aperture-ticks__note',
+    style: `animation-delay:${0.35 + entries.length * 0.035}s`,
+  }, applyTemplate('chart.aperture.note', { unit: numberFormat.format(scale.unit) }));
+
+  dom.appendChild(svg);
+  _apertureResizeWidth = width;
+  observeApertureChart(dom, data);
 }
 
 function renderISOChart(data) {
@@ -714,12 +1078,12 @@ function renderLensChart(data) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 12);
   chart.setOption({
     tooltip: Object.assign(tooltipOpts(), { trigger: 'item', formatter: p => p.name + ': ' + p.value + t('chart.photos_unit') }),
-    grid: { left: 18, right: 58, top: 12, bottom: 12 },
+    grid: { left: 8, right: 58, top: 12, bottom: 12, containLabel: true },
     xAxis: { type: 'value', show: false },
     yAxis: {
       type: 'category',
       data: entries.map(e => e[0]).reverse(),
-      axisLabel: { color: th.textColor, fontSize: 11, fontFamily: th.fontFamily, width: 122, overflow: 'truncate' },
+      axisLabel: { interval: 0, color: th.textColor, fontSize: 11, fontFamily: th.fontFamily },
       axisLine: { lineStyle: { color: th.axisLineColor } },
       axisTick: { show: false }
     },
@@ -740,6 +1104,308 @@ function renderLensChart(data) {
       animationEasing: 'cubicOut'
     }]
   });
+}
+
+let _lensFocalResizeObserver = null;
+let _lensFocalResizeAnalysis = null;
+let _lensFocalResizeFrame = 0;
+let _lensFocalResizeSize = '';
+
+function observeLensFocalChart(dom, analysis) {
+  _lensFocalResizeAnalysis = analysis;
+  if (typeof ResizeObserver !== 'function') return;
+  if (!_lensFocalResizeObserver) {
+    _lensFocalResizeObserver = new ResizeObserver(entries => {
+      const rect = entries[0]?.contentRect;
+      if (!rect || rect.width < 100 || rect.height < 100) return;
+      const size = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+      if (size === _lensFocalResizeSize) return;
+      _lensFocalResizeSize = size;
+      cancelAnimationFrame(_lensFocalResizeFrame);
+      _lensFocalResizeFrame = requestAnimationFrame(() => {
+        if (_lensFocalResizeAnalysis) renderLensFocalChart(_lensFocalResizeAnalysis);
+      });
+    });
+  }
+  _lensFocalResizeObserver.observe(dom);
+}
+
+function renderLensFocalChart(analysis) {
+  const dom = document.getElementById('lens-focal-chart');
+  if (!dom || !analysis || !Array.isArray(analysis.top_focals) || !analysis.top_focals.length) return;
+  const chart = echarts.getInstanceByDom(dom);
+  if (chart) chart.dispose();
+
+  const entries = analysis.top_focals
+    .map(item => ({
+      focal: Number(item.focal),
+      count: Number(item.count) || 0,
+      percentage: Number(item.percentage) || 0,
+    }))
+    .filter(item => Number.isFinite(item.focal) && item.focal > 0)
+    .sort((a, b) => a.focal - b.focal);
+  if (!entries.length) return;
+
+  const th = getChartTheme();
+  const heroFocal = Number(analysis.top_focals[0].focal);
+  const primary = entries.find(item => item.focal === heroFocal) || entries[0];
+  const ns = 'http://www.w3.org/2000/svg';
+  const width = Math.max(260, Math.round(dom.clientWidth || 560));
+  const height = Math.max(184, Math.round(dom.clientHeight || 224));
+  const compact = width < 520;
+  const x0 = compact ? 40 : 60;
+  const x1 = width - (compact ? 10 : 24);
+  const base = height - (compact ? 50 : 46);
+  const top = compact ? 52 : 48;
+  const tickSize = compact ? 10.5 : 11.5;
+  const labelSize = compact ? 10.5 : 11.5;
+  const minFocal = Math.min(...entries.map(item => item.focal));
+  const maxFocal = Math.max(...entries.map(item => item.focal));
+  const maxPercentage = Math.max(...entries.map(item => item.percentage));
+  const yMax = Math.min(100, Math.max(10, Math.ceil(maxPercentage / 10) * 10));
+  const mapX = focal => maxFocal === minFocal
+    ? (x0 + x1) / 2
+    : x0 + Math.log(focal / minFocal) / Math.log(maxFocal / minFocal) * (x1 - x0);
+  const mapY = percentage => base - (percentage / yMax) * (base - top);
+  const formatPercentage = value => Number.isInteger(value) ? String(value) : value.toFixed(1);
+  const heroColor = th.colors[2] || th.colors[0];
+
+  dom.innerHTML = '';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', t('lensAnalysis.chart'));
+  svg.setAttribute('tabindex', '0');
+  svg.classList.add('lens-plumb');
+
+  const add = (tag, attrs = {}, content = '') => {
+    const node = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (content) node.textContent = content;
+    svg.appendChild(node);
+    return node;
+  };
+
+  [0, 0.5, 1].forEach((share, index) => {
+    const y = mapY(yMax * share);
+    add('line', {
+      x1: x0,
+      y1: y,
+      x2: x1,
+      y2: y,
+      stroke: index === 0 ? th.axisLineColor : th.splitLineColor,
+      'stroke-width': index === 0 ? 1.2 : 0.95,
+      'stroke-dasharray': index === 0 ? 'none' : '4 6',
+      class: 'lens-plumb__fade',
+      style: `animation-delay:${index * 0.06}s`,
+    });
+    add('text', {
+      x: x0 - 10,
+      y: y + 2.5,
+      'text-anchor': 'end',
+      fill: th.textColor,
+      'font-family': th.monoFamily,
+      'font-size': tickSize,
+      'font-weight': 700,
+      class: 'lens-plumb__fade',
+      style: `animation-delay:${index * 0.06}s`,
+    }, `${Math.round(yMax * share)}%`);
+  });
+
+  for (let index = 0; index <= 20; index += 1) {
+    const x = x0 + index / 20 * (x1 - x0);
+    add('line', {
+      x1: x,
+      y1: base,
+      x2: x,
+      y2: base - (index % 5 === 0 ? 7 : 4),
+      stroke: th.axisLineColor,
+      'stroke-width': index % 5 === 0 ? 1.1 : 0.85,
+      class: 'lens-plumb__fade',
+      style: `animation-delay:${index * 0.01}s`,
+    });
+  }
+
+  add('text', {
+    x: x0,
+    y: 18,
+    fill: th.textColor,
+    'font-family': th.monoFamily,
+    'font-size': tickSize,
+      'font-weight': 800,
+    'letter-spacing': '.1em',
+    class: 'lens-plumb__fade',
+  }, t('lensAnalysis.axis.share'));
+  add('text', {
+    x: x1,
+    y: 18,
+    'text-anchor': 'end',
+    fill: th.labelColor,
+    'font-family': th.monoFamily,
+    'font-size': tickSize,
+    'font-weight': 800,
+    class: 'lens-plumb__fade',
+    style: 'animation-delay:.18s',
+  }, applyTemplate('lensAnalysis.chart.conclusion', {
+    focal: primary.focal,
+    percentage: formatPercentage(primary.percentage),
+  }));
+
+  entries.forEach((item, index) => {
+    const x = mapX(item.focal);
+    const y = mapY(item.percentage);
+    const hero = item.focal === primary.focal;
+    const delay = 0.22 + index * 0.045;
+    add('line', {
+      x1: x,
+      y1: base,
+      x2: x,
+      y2: y,
+      stroke: hero ? heroColor : th.colors[0],
+      'stroke-width': hero ? 3.6 : 2.15,
+      opacity: hero ? 1 : 0.78,
+      class: 'lens-plumb__plumb',
+      style: `animation-delay:${delay}s`,
+    });
+    if (hero) {
+      add('circle', {
+        cx: x,
+        cy: y,
+        r: compact ? 10.5 : 11.5,
+        fill: 'none',
+        stroke: heroColor,
+        'stroke-width': 2,
+        opacity: 0.42,
+        class: 'lens-plumb__dot',
+        style: `animation-delay:${delay + 0.05}s`,
+      });
+    }
+    const dot = add('circle', {
+      cx: x,
+      cy: y,
+      r: hero ? (compact ? 6.4 : 6.8) : (compact ? 4.1 : 4.5),
+      fill: hero ? heroColor : th.colors[0],
+      class: 'lens-plumb__dot',
+      style: `animation-delay:${delay + 0.05}s`,
+    });
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = `${item.focal}mm · ${item.count}${t('chart.photos_unit')} · ${formatPercentage(item.percentage)}%`;
+    dot.appendChild(title);
+
+    add('line', {
+      x1: x,
+      y1: base,
+      x2: x,
+      y2: base + 5,
+      stroke: hero ? heroColor : th.axisLineColor,
+      'stroke-width': hero ? 2 : 1.35,
+      class: 'lens-plumb__fade',
+      style: `animation-delay:${delay + 0.08}s`,
+    });
+  });
+
+  const axisCandidates = new Map();
+  const addAxisCandidate = (item, priority) => {
+    if (!item) return;
+    const key = String(item.focal);
+    const current = axisCandidates.get(key);
+    if (!current || priority < current.priority) {
+      axisCandidates.set(key, { item, priority });
+    }
+  };
+  addAxisCandidate(primary, 0);
+  addAxisCandidate(entries[0], 1);
+  addAxisCandidate(entries[entries.length - 1], 2);
+  [...entries]
+    .sort((a, b) => b.percentage - a.percentage)
+    .forEach((item, index) => addAxisCandidate(item, 10 + index));
+
+  const axisLabels = [];
+  const maxAxisLabels = compact ? 4 : 5;
+  [...axisCandidates.values()]
+    .sort((a, b) => a.priority - b.priority)
+    .forEach(candidate => {
+      if (axisLabels.length >= maxAxisLabels) return;
+      const item = candidate.item;
+      const x = mapX(item.focal);
+      const text = compact ? String(item.focal) : `${item.focal}mm`;
+      const labelWidth = Math.max(24, text.length * labelSize * 0.62);
+      const collides = axisLabels.some(label => (
+        Math.abs(label.x - x) < (label.width + labelWidth) / 2 + 8
+      ));
+      if (collides) return;
+      axisLabels.push({ x, width: labelWidth });
+      add('text', {
+        x,
+        y: base + 22,
+        'text-anchor': 'middle',
+        fill: item.focal === primary.focal ? th.labelColor : th.textColor,
+        'font-family': th.monoFamily,
+        'font-size': labelSize,
+        'font-weight': item.focal === primary.focal ? 800 : 600,
+        class: 'lens-plumb__label',
+        style: `animation-delay:${0.34 + axisLabels.length * 0.04}s`,
+      }, text);
+    });
+
+  const valueCandidates = [];
+  const valueCandidateKeys = new Set();
+  const addValueCandidate = item => {
+    if (!item) return;
+    const key = String(item.focal);
+    if (valueCandidateKeys.has(key)) return;
+    valueCandidateKeys.add(key);
+    valueCandidates.push(item);
+  };
+  addValueCandidate(primary);
+  [...entries]
+    .sort((a, b) => b.percentage - a.percentage)
+    .forEach(addValueCandidate);
+
+  const valueLabels = [];
+  const maxValueLabels = compact ? 3 : 5;
+  valueCandidates.forEach((item, index) => {
+    if (valueLabels.length >= maxValueLabels) return;
+    const x = mapX(item.focal);
+    const y = mapY(item.percentage);
+    const hero = item.focal === primary.focal;
+    const valueLabel = `${formatPercentage(item.percentage)}%`;
+    const valueLabelWidth = Math.max(34, valueLabel.length * tickSize * 0.64);
+    const valueLabelY = y - (hero ? 15 : 12);
+    const collides = valueLabels.some(label => (
+      Math.abs(label.x - x) < (label.width + valueLabelWidth) / 2 + 7
+      && Math.abs(label.y - valueLabelY) < tickSize + 7
+    ));
+    if (collides) return;
+    valueLabels.push({ x, y: valueLabelY, width: valueLabelWidth });
+    add('text', {
+      x,
+      y: valueLabelY,
+      'text-anchor': 'middle',
+      fill: hero ? th.labelColor : th.textColor,
+      stroke: th.pieBorderColor,
+      'stroke-width': 4,
+      'paint-order': 'stroke',
+      'font-family': th.monoFamily,
+      'font-size': tickSize,
+      'font-weight': hero ? 800 : 700,
+      class: 'lens-plumb__label',
+      style: `animation-delay:${0.3 + index * 0.05}s`,
+    }, valueLabel);
+  });
+
+  const replay = () => renderLensFocalChart(analysis);
+  svg.addEventListener('click', replay);
+  svg.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      replay();
+    }
+  });
+  dom.appendChild(svg);
+  _lensFocalResizeSize = `${width}x${height}`;
+  observeLensFocalChart(dom, analysis);
 }
 
 function renderTimeline(data) {
@@ -824,34 +1490,6 @@ function renderHourlyChart(data) {
   });
 }
 
-function renderDOWChart(data) {
-  const chart = initChart('chart-dow');
-  if (!chart || !data) return;
-  const th = getChartTheme();
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const vals = days.map(d => data[d] || 0);
-  chart.setOption({
-    tooltip: Object.assign(tooltipOpts()),
-    radar: {
-      indicator: days.map(d => ({ name: d, max: Math.max.apply(null, vals.concat([0])) * 1.2 || 10 })),
-      shape: 'polygon',
-      splitNumber: 4,
-      axisName: { color: th.textColor, fontSize: 11, fontFamily: th.fontFamily },
-      splitLine: { lineStyle: { color: th.splitLineColor } },
-      splitArea: { show: true, areaStyle: { color: ['rgba(0,0,0,0)', 'rgba(255,255,255,0.02)'] } },
-      axisLine: { lineStyle: { color: th.axisLineColor } }
-    },
-    series: [{
-      type: 'radar',
-      data: [{ value: vals }],
-      areaStyle: { color: th.radarAreaColor },
-      lineStyle: { color: th.colors[0], width: 2 },
-      itemStyle: { color: th.colors[0] },
-      animationDuration: 800
-    }]
-  });
-}
-
 function renderFormatChart(data) {
   // Dot waffle (G4 Dot Waffle flavor) - 100 dots, one dot = ~1% share
   const el = document.getElementById('chart-format');
@@ -902,10 +1540,200 @@ function renderFormatChart(data) {
   el.appendChild(wrap);
 }
 
+const SHUTTER_BINS = [
+  { key: '1000_plus', axis: '1/1000+', i18n: 'chart.shutter.bin_1000_plus' },
+  { key: '500_999', axis: '1/500', i18n: 'chart.shutter.bin_500_999' },
+  { key: '250_499', axis: '1/250', i18n: 'chart.shutter.bin_250_499' },
+  { key: '125_249', axis: '1/125', i18n: 'chart.shutter.bin_125_249' },
+  { key: '60_124', axis: '1/60', i18n: 'chart.shutter.bin_60_124' },
+  { key: '30_59', axis: '1/30', i18n: 'chart.shutter.bin_30_59' },
+  { key: '15_29', axis: '1/15', i18n: 'chart.shutter.bin_15_29' },
+  { key: 'slower_15', axisKey: 'chart.shutter.slower_axis', i18n: 'chart.shutter.bin_slower_15' },
+];
+
+function renderShutterChart(data) {
+  // F14 Rung Histogram adaptation: ordered exposure bins, proportional caps,
+  // and ladder rungs that preserve the Basics template's visual grammar.
+  const dom = document.getElementById('chart-shutter');
+  if (!dom) return;
+
+  const entries = SHUTTER_BINS.map(bin => {
+    const count = Number(data && data[bin.key]);
+    return {
+      ...bin,
+      label: t(bin.i18n),
+      axisLabel: bin.axisKey ? t(bin.axisKey) : bin.axis,
+      count: Number.isFinite(count) && count > 0 ? count : 0,
+    };
+  });
+  const total = entries.reduce((sum, entry) => sum + entry.count, 0);
+
+  dom.innerHTML = '';
+  dom.onclick = null;
+  dom.style.cursor = '';
+
+  if (!total) {
+    const empty = document.createElement('p');
+    empty.className = 'shutter-chart__empty';
+    empty.textContent = t('chart.shutter.empty');
+    dom.appendChild(empty);
+    return;
+  }
+
+  const th = getChartTheme();
+  const ns = 'http://www.w3.org/2000/svg';
+  const width = Math.max(320, Math.round(dom.clientWidth || 400));
+  const height = 220;
+  const left = 28;
+  const right = 14;
+  const top = 27;
+  const base = 168;
+  const plotWidth = width - left - right;
+  const slotWidth = plotWidth / entries.length;
+  const maxCount = Math.max(...entries.map(entry => entry.count));
+  const maxHeight = base - top;
+  const numberFormat = new Intl.NumberFormat(currentLang === 'zh' ? 'zh-CN' : 'en-US');
+  const pseudoRandom = (index, salt) => Math.abs(((index * 73856093) ^ (salt * 19349663)) % 1000) / 1000;
+
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', t('chart.shutter'));
+  svg.setAttribute('tabindex', '0');
+  svg.classList.add('shutter-rungs');
+
+  const add = (tag, attrs = {}, content = '', parent = svg) => {
+    const node = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (content !== '') node.textContent = content;
+    parent.appendChild(node);
+    return node;
+  };
+
+  [0, 0.5, 1].forEach(ratio => {
+    const y = base - maxHeight * ratio;
+    add('line', {
+      x1: left,
+      y1: y,
+      x2: width - right,
+      y2: y,
+      stroke: ratio === 0 ? th.axisLineColor : th.splitLineColor,
+      'stroke-width': ratio === 0 ? 1 : 0.8,
+      'stroke-dasharray': ratio === 0 ? 'none' : '2 4',
+      class: 'shutter-rungs__fade',
+    });
+    if (ratio > 0) {
+      add('text', {
+        x: left - 5,
+        y: y + 2.5,
+        'text-anchor': 'end',
+        fill: th.textColor,
+        'font-family': th.monoFamily,
+        'font-size': 6.5,
+        'font-weight': 700,
+        class: 'shutter-rungs__fade',
+        style: `animation-delay:${ratio * 0.08}s`,
+      }, numberFormat.format(Math.round(maxCount * ratio)));
+    }
+  });
+
+  entries.forEach((entry, index) => {
+    const centerX = left + slotWidth * (index + 0.5);
+    const valueY = entry.count
+      ? base - (entry.count / maxCount) * maxHeight
+      : base;
+    const ladderHeight = base - valueY;
+    const hero = entry.count === maxCount;
+    const color = hero ? th.colors[0] : th.labelColor;
+    const widthHalf = Math.min(24, slotWidth * 0.26);
+    const row = document.createElementNS(ns, 'g');
+    const title = document.createElementNS(ns, 'title');
+    const percentage = total ? (entry.count / total) * 100 : 0;
+    title.textContent = `${entry.label} · ${numberFormat.format(entry.count)}${t('chart.photos_unit')} · ${percentage.toFixed(1)}%`;
+    row.appendChild(title);
+    svg.appendChild(row);
+
+    const addToRow = (tag, attrs = {}, content = '') => add(tag, attrs, content, row);
+    const rungCount = Math.max(1, Math.floor(ladderHeight / 5.2));
+    for (let rung = 0; rung <= rungCount; rung += 1) {
+      const y = base - rung * 5.2;
+      if (y < valueY - 0.5) break;
+      const jitter = pseudoRandom(rung + 1, index + 3) * 1.8;
+      addToRow('line', {
+        x1: centerX - widthHalf + 1.2 + jitter,
+        x2: centerX + widthHalf - 1.2 + jitter,
+        y1: y,
+        y2: y,
+        stroke: color,
+        'stroke-width': hero ? 1.15 : 0.95,
+        opacity: hero
+          ? 0.72 + pseudoRandom(rung + 2, index + 5) * 0.28
+          : 0.42 + pseudoRandom(rung + 2, index + 5) * 0.34,
+        class: 'shutter-rungs__fade',
+        style: `animation-delay:${Math.min(0.7, index * 0.035 + rung * 0.008)}s`,
+      });
+    }
+
+    addToRow('line', {
+      x1: centerX - widthHalf - 1,
+      x2: centerX + widthHalf + 1,
+      y1: valueY,
+      y2: valueY,
+      stroke: color,
+      'stroke-width': hero ? 2.5 : 1.8,
+      'stroke-linecap': 'round',
+      class: 'shutter-rungs__cap',
+      style: `animation-delay:${0.14 + index * 0.045}s`,
+    });
+
+    if (entry.count) {
+      addToRow('text', {
+        x: centerX,
+        y: Math.max(9, valueY - 6),
+        'text-anchor': 'middle',
+        fill: hero ? th.colors[0] : th.labelColor,
+        'font-family': th.monoFamily,
+        'font-size': 7.5,
+        'font-weight': 800,
+        class: 'shutter-rungs__label',
+        style: `animation-delay:${0.18 + index * 0.045}s`,
+      }, numberFormat.format(entry.count));
+    }
+
+    addToRow('line', {
+      x1: centerX,
+      y1: base,
+      x2: centerX,
+      y2: base + 5,
+      stroke: th.axisLineColor,
+      'stroke-width': 0.8,
+      class: 'shutter-rungs__fade',
+      style: `animation-delay:${0.2 + index * 0.03}s`,
+    });
+    addToRow('text', {
+      x: centerX,
+      y: base + 18,
+      'text-anchor': 'middle',
+      fill: hero ? th.labelColor : th.textColor,
+      'font-family': th.monoFamily,
+      'font-size': 7,
+      'font-weight': hero ? 800 : 600,
+      class: 'shutter-rungs__label',
+      style: `animation-delay:${0.22 + index * 0.03}s`,
+    }, entry.axisLabel);
+  });
+
+  dom.appendChild(svg);
+  dom.style.cursor = 'pointer';
+  dom.onclick = () => renderShutterChart(data);
+}
+
 /* ============================================================
    6. Render Dashboard
    ============================================================ */
 let _lastDashboardData = null;
+let dashboardLens = '';
 
 function renderDashboard(data) {
   _lastDashboardData = data;
@@ -920,6 +1748,8 @@ function renderDashboard(data) {
   animateNumber('stat-cameras', Object.keys(stats.cameras || {}).length);
   animateNumber('stat-lenses', Object.keys(stats.lenses || {}).length);
 
+  renderLensAnalysis(stats.lens_analyses || {});
+
   // Render charts
   if (stats.focal_groups) renderFocalGroup(stats.focal_groups);
   if (stats.focal_dist) renderFocalBar(stats.focal_dist);
@@ -929,8 +1759,8 @@ function renderDashboard(data) {
   if (stats.lenses) renderLensChart(stats.lenses);
   if (stats.monthly) renderTimeline(stats.monthly);
   if (stats.hourly) renderHourlyChart(stats.hourly);
-  if (stats.dow) renderDOWChart(stats.dow);
   if (stats.formats) renderFormatChart(stats.formats);
+  if (stats.shutter_dist) renderShutterChart(stats.shutter_dist);
 
   // Recommendations
   renderRecommendations(stats.recommendations || []);
@@ -939,6 +1769,103 @@ function renderDashboard(data) {
   if (data.photos && data.photos.length > 0) {
     renderTable(data.photos);
   }
+}
+
+function renderLensAnalysis(lensAnalyses) {
+  const select = document.getElementById('dashboard-lens-filter');
+  const badge = document.getElementById('lens-analysis-count');
+  const empty = document.getElementById('lens-analysis-empty');
+  const emptyTitle = document.getElementById('lens-analysis-empty-title');
+  const emptyDesc = document.getElementById('lens-analysis-empty-desc');
+  const content = document.getElementById('lens-analysis-content');
+  if (!select || !empty || !content) return;
+
+  const entries = Object.entries(lensAnalyses || {});
+  if (!entries.length) {
+    dashboardLens = '';
+    select.innerHTML = `<option value="">${escapeHtml(t('lensAnalysis.all'))}</option>`;
+    select.disabled = true;
+    if (badge) badge.textContent = `0 · ${t('lensAnalysis.badge')}`;
+    if (emptyTitle) emptyTitle.textContent = t('lensAnalysis.none.title');
+    if (emptyDesc) emptyDesc.textContent = t('lensAnalysis.none.desc');
+    empty.hidden = false;
+    content.hidden = true;
+    return;
+  }
+
+  select.innerHTML = `<option value="">${escapeHtml(t('lensAnalysis.all'))}</option>`;
+  entries.forEach(([lens, analysis]) => {
+    const option = document.createElement('option');
+    option.value = lens;
+    option.textContent = lens;
+    option.selected = lens === dashboardLens;
+    select.appendChild(option);
+  });
+  select.disabled = false;
+  if (badge) badge.textContent = `${entries.length} · ${t('lensAnalysis.badge')}`;
+
+  if (dashboardLens && lensAnalyses[dashboardLens]) {
+    renderLensAnalysisDetail(dashboardLens, lensAnalyses[dashboardLens]);
+    return;
+  }
+
+  dashboardLens = '';
+  select.value = '';
+  if (emptyTitle) emptyTitle.textContent = t('lensAnalysis.empty.title');
+  if (emptyDesc) emptyDesc.textContent = t('lensAnalysis.empty.desc');
+  empty.hidden = false;
+  content.hidden = true;
+  const chart = echarts.getInstanceByDom(document.getElementById('lens-focal-chart'));
+  if (chart) chart.dispose();
+}
+
+function renderLensAnalysisDetail(lens, analysis) {
+  const empty = document.getElementById('lens-analysis-empty');
+  const content = document.getElementById('lens-analysis-content');
+  const select = document.getElementById('dashboard-lens-filter');
+  const top = document.getElementById('lens-metric-top');
+  const avg = document.getElementById('lens-metric-avg');
+  const concentration = document.getElementById('lens-metric-concentration');
+  const range = document.getElementById('lens-metric-range');
+  const photoCount = document.getElementById('lens-analysis-photo-count');
+  const ranking = document.getElementById('lens-focal-ranking');
+  const topFocals = Array.isArray(analysis.top_focals) ? analysis.top_focals : [];
+  if (!topFocals.length) return;
+
+  if (select) select.value = lens;
+  if (empty) empty.hidden = true;
+  if (content) content.hidden = false;
+
+  const primary = topFocals[0];
+  if (top) top.textContent = `${primary.focal}mm`;
+  if (avg) avg.textContent = `${analysis.avg_focal}mm`;
+  if (concentration) concentration.textContent = `${analysis.top_three_percentage}%`;
+  if (range) {
+    range.textContent = analysis.focal_min === analysis.focal_max
+      ? `${analysis.focal_min}mm`
+      : `${analysis.focal_min}-${analysis.focal_max}mm`;
+  }
+  if (photoCount) {
+    photoCount.textContent = t('lensAnalysis.photos').replace('{count}', analysis.focal_count);
+  }
+  if (ranking) {
+    ranking.innerHTML = topFocals.map((item, index) => {
+      const percentage = Math.max(2, Number(item.percentage) || 0);
+      return `
+        <div class="lens-analysis__rank-item">
+          <div class="lens-analysis__rank-head">
+            <span><b>${String(index + 1).padStart(2, '0')}</b>${item.focal}mm</span>
+            <span>${item.count}${t('chart.photos_unit')} · ${item.percentage}%</span>
+          </div>
+          <div class="lens-analysis__rank-track" aria-hidden="true">
+            <span style="width:${percentage}%"></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderLensFocalChart(analysis);
 }
 
 /* ============================================================
@@ -1185,8 +2112,6 @@ function confirmDialog(options = {}) {
     const dialog = document.getElementById('confirm-dialog');
     const title = document.getElementById('confirm-title');
     const message = document.getElementById('confirm-message');
-    const textGroup = document.getElementById('confirm-text-group');
-    const input = document.getElementById('confirm-text');
     const button = document.getElementById('btn-confirm-action');
     const cancel = document.getElementById('btn-cancel-confirm');
     const form = dialog.querySelector('form');
@@ -1194,28 +2119,19 @@ function confirmDialog(options = {}) {
 
     title.textContent = options.title || t('confirm.title');
     message.textContent = options.message || '';
-    textGroup.hidden = !options.requireDelete;
-    input.value = '';
-    button.disabled = Boolean(options.requireDelete);
     const submit = event => {
       event.preventDefault();
       close();
-      resolve(!options.requireDelete || input.value === 'DELETE');
+      resolve(true);
     };
     const close = () => {
       form.removeEventListener('submit', submit);
       cancel.removeEventListener('click', close);
-      input.removeEventListener('input', validate);
       if (dialog.open) dialog.close();
-    };
-    const validate = () => {
-      button.disabled = input.value !== 'DELETE';
     };
     form.addEventListener('submit', submit);
     cancel.addEventListener('click', close);
-    input.addEventListener('input', validate);
     dialog.showModal();
-    if (options.requireDelete) input.focus();
   });
 }
 
@@ -1259,26 +2175,49 @@ function getCollectionById(id) {
 function renderAuthPanel() {
   const authPanel = document.getElementById('manage-auth');
   const manageApp = document.getElementById('manage-app');
+  const manageView = document.getElementById('view-manage');
   const title = document.getElementById('auth-title');
   const description = document.getElementById('auth-description');
   const confirmGroup = document.getElementById('confirm-password-group');
+  const setupWarning = document.getElementById('auth-setup-warning');
+  const resetButton = document.getElementById('btn-reset-password');
   const passwordLabel = document.getElementById('auth-password-label');
   const submit = document.getElementById('auth-submit');
   const passwordInput = document.getElementById('auth-password');
   const toggle = document.getElementById('auth-toggle');
 
+  if (manageView) {
+    manageView.classList.toggle('is-auth-locked', !authState.authenticated);
+  }
+
   if (!authState.authenticated) {
-    if (authPanel) authPanel.hidden = false;
-    if (manageApp) manageApp.hidden = true;
+    if (authPanel) {
+      authPanel.hidden = false;
+      authPanel.setAttribute('aria-hidden', 'false');
+    }
+    if (manageApp) {
+      manageApp.hidden = true;
+      manageApp.setAttribute('aria-hidden', 'true');
+    }
     if (confirmGroup) confirmGroup.hidden = authState.configured;
+    if (setupWarning) setupWarning.hidden = authState.configured;
+    if (resetButton) resetButton.hidden = !authState.configured;
     if (title) title.textContent = t(authState.configured ? 'auth.login.title' : 'auth.setup.title');
     if (description) description.textContent = t(authState.configured ? 'auth.login.desc' : 'auth.setup.desc');
     if (passwordLabel) passwordLabel.textContent = t(authState.configured ? 'auth.password' : 'auth.new_password');
     if (submit) submit.textContent = t(authState.configured ? 'auth.login' : 'auth.setup');
     if (passwordInput) passwordInput.setAttribute('autocomplete', authState.configured ? 'current-password' : 'new-password');
-  } else if (authPanel && manageApp) {
-    authPanel.hidden = true;
-    manageApp.hidden = false;
+  } else {
+    if (authPanel) {
+      authPanel.hidden = true;
+      authPanel.setAttribute('aria-hidden', 'true');
+    }
+    if (manageApp) {
+      manageApp.hidden = false;
+      manageApp.setAttribute('aria-hidden', 'false');
+    }
+    if (setupWarning) setupWarning.hidden = true;
+    if (resetButton) resetButton.hidden = true;
   }
 
   if (toggle) {
@@ -1289,6 +2228,48 @@ function renderAuthPanel() {
 function setAuthError(message = '') {
   const error = document.getElementById('auth-error');
   if (error) error.textContent = message;
+}
+
+function setResetPasswordError(message = '') {
+  const error = document.getElementById('reset-password-error');
+  if (error) error.textContent = message;
+}
+
+function updateResetPasswordButton() {
+  const acknowledge = document.getElementById('reset-password-ack');
+  const button = document.getElementById('btn-confirm-reset-password');
+  if (button) button.disabled = !acknowledge?.checked;
+}
+
+function openResetPasswordDialog() {
+  if (!authState.configured || authState.authenticated) return;
+  const dialog = document.getElementById('reset-password-dialog');
+  const form = document.getElementById('reset-password-form');
+  const password = document.getElementById('reset-new-password');
+  const button = document.getElementById('btn-confirm-reset-password');
+  if (!dialog || !form) return;
+
+  form.reset();
+  setResetPasswordError();
+  if (button) {
+    button.disabled = true;
+    button.textContent = t('auth.reset.action');
+  }
+  dialog.showModal();
+  password?.focus();
+}
+
+function closeResetPasswordDialog() {
+  const dialog = document.getElementById('reset-password-dialog');
+  const form = document.getElementById('reset-password-form');
+  const button = document.getElementById('btn-confirm-reset-password');
+  if (form) form.reset();
+  setResetPasswordError();
+  if (button) {
+    button.disabled = true;
+    button.textContent = t('auth.reset.action');
+  }
+  if (dialog?.open) dialog.close();
 }
 
 async function syncManagementView() {
@@ -1311,13 +2292,90 @@ async function syncManagementView() {
   }
 }
 
+function resetManagementState() {
+  managementInitialized = false;
+  selectedPhotoIds.clear();
+  managePhotos = [];
+  manageTotal = 0;
+  collections.length = 0;
+  photoOptions.cameras = [];
+  photoOptions.lenses = [];
+  photoOptions.formats = [];
+  batches = [];
+  summary = { active_photos: 0, deleted_photos: 0, ungrouped_photos: 0, collections: 0 };
+  Object.assign(manageFilters, {
+    collectionId: 'all',
+    q: '',
+    camera: '',
+    lens: '',
+    format: '',
+    dateFrom: '',
+    dateTo: '',
+    deleted: false,
+    sort: 'captured_at',
+    order: 'desc',
+    limit: 50,
+    offset: 0,
+  });
+  dashboardScope = 'current';
+  dashboardCollectionId = null;
+  dashboardLens = '';
+  _lastDashboardData = null;
+  closePhotoDrawer();
+  clearDashboard();
+}
+
+async function resetPassword(event) {
+  event.preventDefault();
+  setResetPasswordError();
+
+  const next = document.getElementById('reset-new-password').value;
+  const confirm = document.getElementById('reset-confirm-password').value;
+  const acknowledge = document.getElementById('reset-password-ack');
+  const button = document.getElementById('btn-confirm-reset-password');
+
+  if (next !== confirm) return setResetPasswordError(t('auth.error.confirm'));
+  if (!acknowledge?.checked) return setResetPasswordError(t('auth.reset.ack_required'));
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = t('auth.reset.in_progress');
+  }
+
+  try {
+    await apiJson('/api/auth/reset', {
+      method: 'POST',
+      body: { new_password: next },
+    });
+  } catch (error) {
+    setResetPasswordError(t('auth.reset.error'));
+    if (button) {
+      button.disabled = !acknowledge.checked;
+      button.textContent = t('auth.reset.action');
+    }
+    return;
+  }
+
+  closeResetPasswordDialog();
+  authState.configured = true;
+  authState.authenticated = true;
+  resetManagementState();
+  renderAuthPanel();
+  renderUploadTarget();
+  try {
+    await syncManagementView();
+  } catch (error) {
+    // The reset already succeeded; a later refresh can retry loading the empty state.
+  }
+  showToast(t('auth.reset.success'));
+}
+
 async function handleAuthSubmit(event) {
   event.preventDefault();
   setAuthError();
   const password = document.getElementById('auth-password').value;
   const confirm = document.getElementById('auth-confirm-password').value;
   if (!authState.configured) {
-    if (password.length < 8) return setAuthError(t('auth.error.minimum'));
     if (password !== confirm) return setAuthError(t('auth.error.confirm'));
   }
   const submit = document.getElementById('auth-submit');
@@ -1346,6 +2404,7 @@ async function logout() {
   authState.authenticated = false;
   managementInitialized = false;
   selectedPhotoIds.clear();
+  dashboardLens = '';
   renderAuthPanel();
   renderUploadTarget();
   showToast(t('auth.logout'));
@@ -1358,10 +2417,6 @@ async function changePassword(event) {
   const current = document.getElementById('current-password').value;
   const next = document.getElementById('new-password').value;
   const confirm = document.getElementById('confirm-new-password').value;
-  if (next.length < 8) {
-    showToast(t('auth.error.minimum'), 'error');
-    return;
-  }
   if (next !== confirm) {
     showToast(t('auth.error.confirm'), 'error');
     return;
@@ -1452,8 +2507,6 @@ function renderCollectionList() {
     button.className = 'collection-item';
     button.type = 'button';
     button.dataset.id = collection.id;
-    button.setAttribute('role', 'button');
-    button.setAttribute('tabindex', '0');
     button.classList.toggle('is-active', String(manageFilters.collectionId) === String(collection.id));
     if (collection.color) button.style.setProperty('--collection-color', collection.color);
     const recent = collection.latest_captured_at ? formatDateTimeDisplay(collection.latest_captured_at).slice(0, 10) : '';
@@ -1468,7 +2521,7 @@ function renderCollectionList() {
       </span>
       <span class="collection-item__actions">
         <button class="icon-button" type="button" data-action="edit" title="${escapeHtml(t('collection.edit'))}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-        <button class="icon-button icon-button--danger" type="button" data-action="delete" title="${escapeHtml(t('manage.delete_photo'))}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></button>
+        <button class="icon-button icon-button--danger" type="button" data-action="delete" title="${escapeHtml(t('collection.delete'))}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></button>
       </span>
     `;
     button.addEventListener('click', event => {
@@ -1480,12 +2533,6 @@ function renderCollectionList() {
         return;
       }
       selectScope(collection.id);
-    });
-    button.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        selectScope(collection.id);
-      }
     });
     list.appendChild(button);
   });
@@ -1790,10 +2837,10 @@ async function deleteCollection(collection) {
 async function saveBatchCollection() {
   const batchId = document.getElementById('batch-select').value;
   if (!batchId) return;
-  pendingBatchId = batchId;
   const batch = batches.find(item => String(item.id) === String(batchId));
   const suggested = `Batch ${formatDateTimeDisplay(batch && batch.uploaded_at).slice(0, 10)}`;
   openCollectionDialog(null);
+  pendingBatchId = batchId;
   document.getElementById('collection-name').value = suggested;
 }
 
@@ -1944,11 +2991,10 @@ async function restorePhotos(photoIds) {
 async function purgePhotos() {
   const confirmed = await confirmDialog({
     message: t('manage.confirm_purge'),
-    requireDelete: true,
   });
   if (!confirmed) return;
   try {
-    await apiJson('/api/photos/purge', { method: 'POST', body: { confirm: 'DELETE' } });
+    await apiJson('/api/photos/purge', { method: 'POST', body: {} });
     selectedPhotoIds.clear();
     await Promise.all([refreshSummary(), loadCollections(), loadPhotos()]);
     showToast(t('manage.purged'));
@@ -1994,6 +3040,8 @@ function clearDashboard() {
   if (count) count.textContent = '0';
   const recommendations = document.getElementById('recommendations');
   if (recommendations) recommendations.style.display = 'none';
+  dashboardLens = '';
+  renderLensAnalysis({});
 }
 
 function setDashboardScope(scope) {
@@ -2172,6 +3220,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-cancel-password')?.addEventListener('click', () => {
     document.getElementById('password-dialog').close();
   });
+  document.getElementById('btn-reset-password')?.addEventListener('click', openResetPasswordDialog);
+  document.getElementById('reset-password-form')?.addEventListener('submit', resetPassword);
+  document.getElementById('btn-cancel-reset-password')?.addEventListener('click', closeResetPasswordDialog);
+  document.getElementById('reset-password-ack')?.addEventListener('change', updateResetPasswordButton);
   document.getElementById('btn-new-collection')?.addEventListener('click', () => openCollectionDialog(null));
   document.getElementById('btn-upload-new-collection')?.addEventListener('click', () => openCollectionDialog(null));
   document.getElementById('btn-save-batch')?.addEventListener('click', saveBatchCollection);
@@ -2239,6 +3291,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('dashboard-collection')?.addEventListener('change', event => {
     dashboardCollectionId = event.target.value || null;
+  });
+  document.getElementById('dashboard-lens-filter')?.addEventListener('change', event => {
+    dashboardLens = event.target.value;
+    const stats = _lastDashboardData && _lastDashboardData.stats ? _lastDashboardData.stats : {};
+    renderLensAnalysis(stats.lens_analyses || {});
   });
 
   syncManagementView();
@@ -2341,7 +3398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (collection) {
           showToast(applyTemplate('upload.collection_saved', { name: collection.name }));
         }
-        loadManagementData();
+        if (authState.authenticated) loadManagementData();
       }
 
       setTimeout(() => {
@@ -2390,6 +3447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (fileInput) fileInput.value = '';
     _lastDashboardData = null;
+    dashboardLens = '';
     setDashboardScope('current');
     document.querySelectorAll('.chart').forEach(el => {
       const c = echarts.getInstanceByDom(el);

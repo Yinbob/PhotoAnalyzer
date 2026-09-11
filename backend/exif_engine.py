@@ -4,16 +4,24 @@ Uses multiple backends with graceful fallbacks.
 """
 import os
 import json
+import tempfile
 from pathlib import Path
 from typing import Optional
 
 # Format support detection
 _HAS_RAWPY = False
 _HAS_HEIF = False
+_HAS_EXIFREAD = False
 
 try:
     import rawpy
     _HAS_RAWPY = True
+except ImportError:
+    pass
+
+try:
+    import exifread
+    _HAS_EXIFREAD = True
 except ImportError:
     pass
 
@@ -91,24 +99,113 @@ class ExifEngine:
             return {"filename": os.path.basename(file_path), "error": str(e)}
 
     def _extract_raw(self, file_path: str) -> Optional[dict]:
-        """Extract EXIF from RAW files using rawpy."""
-        if not _HAS_RAWPY:
-            return {"filename": os.path.basename(file_path),
-                    "error": "rawpy not installed - cannot read RAW files"}
-        try:
-            with rawpy.imread(file_path) as raw:
-                # Try to get exif from rawpy
-                exif_bytes = raw.extract_thumb()
-                # rawpy doesn't provide structured EXIF easily
-                # Fall back to Pillow which can sometimes read RAW exif
-                return self._extract_pil(file_path)
-        except Exception:
-            # Many RAW formats: try Pillow directly
+        """Extract EXIF from RAW files via embedded preview or metadata parser."""
+        raw_error = None
+        if _HAS_RAWPY:
             try:
-                return self._extract_pil(file_path)
+                with rawpy.imread(file_path) as raw:
+                    thumb = raw.extract_thumb()
+                ext_map = {
+                    getattr(rawpy.ThumbFormat, "JPEG", 1): ".jpg",
+                    getattr(rawpy.ThumbFormat, "BITMAP", 2): ".bmp",
+                }
+                ext = ext_map.get(thumb.format, ".img")
+                with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                    tmp.write(thumb.data)
+                    tmp_path = tmp.name
+                try:
+                    parsed = self._extract_pil(tmp_path)
+                    if parsed and not parsed.get("error"):
+                        parsed["filename"] = os.path.basename(file_path)
+                        return parsed
+                finally:
+                    os.unlink(tmp_path)
             except Exception as e:
-                return {"filename": os.path.basename(file_path),
-                        "error": f"Cannot read RAW file: {e}"}
+                raw_error = str(e)
+        if _HAS_EXIFREAD:
+            try:
+                with open(file_path, "rb") as f:
+                    tags = exifread.process_file(f, details=False)
+                if tags:
+                    return self._parse_exifread_dict(tags, file_path)
+            except Exception as e:
+                raw_error = raw_error or str(e)
+        try:
+            return self._extract_pil(file_path)
+        except Exception as e:
+            return {
+                "filename": os.path.basename(file_path),
+                "error": f"Cannot read RAW file: {raw_error or e}",
+            }
+
+    def _parse_exifread_dict(self, tags: dict, file_path: str) -> Optional[dict]:
+        """Convert exifread tags to the same standardized structure used by Pillow."""
+        def tag(*names: str) -> str:
+            for name in names:
+                value = tags.get(name)
+                if value is not None:
+                    return str(value).strip()
+            return ""
+
+        exif = {
+            "Model": tag("Image Model", "EXIF Model", "Thumbnail Model"),
+            "LensModel": tag("EXIF LensModel", "Image LensModel", "Thumbnail LensModel"),
+            "FocalLength": self._exifread_number(
+                tags.get("EXIF FocalLength")
+                or tags.get("Image FocalLength")
+                or tags.get("Thumbnail FocalLength")
+            ),
+            "FocalLengthIn35mmFilm": self._exifread_number(
+                tags.get("EXIF FocalLengthIn35mmFilm")
+                or tags.get("Image FocalLengthIn35mmFilm")
+            ),
+            "FNumber": self._exifread_number(
+                tags.get("EXIF FNumber")
+                or tags.get("Image FNumber")
+                or tags.get("Thumbnail FNumber")
+            ),
+            "ISOSpeedRatings": self._exifread_int(
+                tags.get("EXIF ISOSpeedRatings")
+                or tags.get("Image ISOSpeedRatings")
+                or tags.get("Thumbnail ISOSpeedRatings")
+            ),
+            "ExposureTime": self._exifread_number(
+                tags.get("EXIF ExposureTime")
+                or tags.get("Image ExposureTime")
+                or tags.get("Thumbnail ExposureTime")
+            ),
+            "DateTimeOriginal": tag(
+                "EXIF DateTimeOriginal", "Image DateTimeOriginal",
+                "Image DateTime", "EXIF DateTimeDigitized",
+            ),
+        }
+        return self._parse_exif_dict(exif, file_path)
+
+    @staticmethod
+    def _exifread_number(value) -> Optional[float]:
+        if value is None:
+            return None
+        text = str(value).strip().strip('[]')
+        if not text:
+            return None
+        try:
+            if "," in text:
+                parts = [part.strip() for part in text.split(",") if part.strip()]
+                if len(parts) == 2:
+                    return float(parts[0]) / float(parts[1])
+                if parts:
+                    return float(parts[0])
+            if "/" in text:
+                numerator, denominator = text.split("/", 1)
+                return float(numerator) / float(denominator)
+            return float(text)
+        except (ValueError, ZeroDivisionError, TypeError):
+            return None
+
+    @staticmethod
+    def _exifread_int(value) -> Optional[int]:
+        number = ExifEngine._exifread_number(value)
+        return int(number) if number is not None else None
 
     def _extract_heif(self, file_path: str) -> Optional[dict]:
         """Extract EXIF from HEIF/HEIC files."""
